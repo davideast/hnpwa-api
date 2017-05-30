@@ -1,0 +1,11 @@
+{
+    "compilerOptions": {
+        "module": "commonjs",
+        "target": "es2015",
+        "noImplicitAny": true,
+        "sourceMap": false,
+        "outDir": "functions",
+        "strictNullChecks": true,
+        "moduleResolution": "node"
+    }
+}

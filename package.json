@@ -1,0 +1,17 @@
+{
+  "name": "hnpwa-api",
+  "version": "0.0.0",
+  "description": "Hacker News API on Cloud Functions",
+  "dependencies": {
+    "@types/compression": "0.0.33",
+    "@types/express": "^4.0.35",
+    "@types/node-fetch": "^1.6.7",
+    "compression": "^1.6.2",
+    "express": "^4.15.3",
+    "firebase": "^4.0.0",
+    "firebase-admin": "~4.1.2",
+    "firebase-functions": "^0.5",
+    "node-fetch": "^1.7.0"
+  },
+  "private": true
+}
