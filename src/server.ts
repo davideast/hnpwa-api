@@ -14,6 +14,10 @@ const routes = {
   USER: /^\/user\/(\w+)$/,
 };
 
+function roundDown(page: string) {
+  return Math.min(10, Math.max(1, parseInt(page, 10) || 1));
+}
+
 function initializeApp(req: express.Request, res: express.Response, next: Function) {
   if(firebase.apps.length === 0) {
     firebase.initializeApp({ databaseURL: 'https://hacker-news.firebaseio.com/' });
@@ -28,7 +32,7 @@ function cacheControl(req: express.Request, res: express.Response, next: Functio
 
 export async function getNewsAndStuff(req: express.Request, res: express.Response) {
   const base = req.params[0];
-  const page = Math.min(10, Math.max(1, parseInt(req.query.page, 10) || 1));
+  const page = roundDown(req.query.page);
   const newsies = await api[base]({ page });
   res.jsonp(newsies);
 }
@@ -37,6 +41,10 @@ app.use(initializeApp);
 app.use(cacheControl);
 app.use(compression());
 app.get(routes.NEWS_AND_STUFF, getNewsAndStuff);
+
+app.get('/favicon.ico', function (req, res) {
+  res.status(204).end();
+});
 
 function isDevMode() {
   const args = process.argv.slice(2);

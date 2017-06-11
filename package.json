@@ -2,6 +2,10 @@
   "name": "hnpwa-api",
   "version": "0.0.0",
   "description": "Hacker News API on Cloud Functions",
+  "scripts": {
+    "build": "tsc",
+    "serve": "npm run build && node functions/server dev"
+  },
   "dependencies": {
     "@types/compression": "0.0.33",
     "@types/express": "^4.0.35",

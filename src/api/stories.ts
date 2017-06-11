@@ -1,4 +1,4 @@
-import { HackerNewsItem } from '../api';
+import { HackerNewsItem, Story, story } from '../api';
 import * as firebase from 'firebase';
 
 export async function stories(base: string, options: {}) {
@@ -11,10 +11,10 @@ export async function stories(base: string, options: {}) {
   const stories = await storyRef.once('value');
   const items: number[] = stories.val().slice(startIndex, endIndex);
   const promises = items.map(id => ref.child('item').child(id.toString()).once('value'));
-  const resolves: HackerNewsItem[] = await Promise.all(promises.map(async snap => {
+  const resolves: Story[] = await Promise.all(promises.map(async snap => {
     const snapshot = await snap;
-    return snapshot.val();
+    const item = snapshot.val() as HackerNewsItem;
+    return story(item);
   }));
   return resolves;
 }
-

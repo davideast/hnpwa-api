@@ -1,8 +1,8 @@
 export * from './interfaces';
-import { HackerNewsItem } from './interfaces';
+import { Story } from './interfaces';
 import { stories } from './stories';
 
-export type ApiFn = (options:{}) => Promise<HackerNewsItem[]>;
+export type ApiFn = (options:{}) => Promise<Story[]>;
 export type ApiString = 'topstories' | 'newstories' | 'askstories' | 'showstories' | 'jobstories';
 
 export const apiMap: { [key: string]: ApiString } = {
