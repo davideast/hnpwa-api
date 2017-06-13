@@ -41,17 +41,6 @@ function initializeApp(req: express.Request, res: express.Response, next: Functi
 }
 
 /**
- * Adds a 5 minute browser cache and 10 minute CDN cache for each route.
- * @param req 
- * @param res 
- * @param next 
- */
-function cacheControl(req: express.Request, res: express.Response, next: Function) {
-  res.set('Cache-Control', 'public, max-age=300, s-maxage=600');
-  next();
-}
-
-/**
  * Get a list of "stories" based on the parameters provided. This API maps to the
  * traditional "top bar" (news, ask, jobs, show) in HN UI's. Paging is provided 
  * through the ?page query param.
@@ -91,7 +80,6 @@ export async function getUserInfo(req: express.Request, res: express.Response) {
 
 // Middleware
 server.use(initializeApp);
-server.use(cacheControl);
 server.use(compression());
 
 // GET Routes
