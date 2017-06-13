@@ -5,7 +5,7 @@
   "scripts": {
     "build": "tsc",
     "watch": "node_modules/.bin/tsc -w",
-    "serve": "node_modules/.bin/nodemon functions/server.js dev",
+    "serve": "node_modules/.bin/nodemon functions/hnpwa-api/server.js dev",
     "deploy": "npm run build && firebase deploy --only functions"
   },
   "dependencies": {

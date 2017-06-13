@@ -1,10 +1,11 @@
 export * from './interfaces';
-import { Story, itemMap, HackerNewsItemTree, HackerNewsItem } from './interfaces';
+import { Story, itemMap, HackerNewsItemTree, HackerNewsItem, Item } from './interfaces';
 import { stories } from './stories';
 import { getItemAndComments } from './item';
+import { getUser, User } from './user';
 
 export type ApiFn = (options:{}) => Promise<Story[]>;
-export type ApiString = 'topstories' | 'newstories' | 'askstories' | 'showstories' | 'jobstories' | 'item';
+export type ApiString = 'topstories' | 'newstories' | 'askstories' | 'showstories' | 'jobstories' | 'item' | 'user';
 
 export const apiMap: { [key: string]: ApiString } = {
   NEWS: 'topstories',
@@ -12,7 +13,8 @@ export const apiMap: { [key: string]: ApiString } = {
   ASK: 'askstories',
   SHOW: 'showstories',
   JOBS: 'jobstories',
-  ITEM: 'item'
+  ITEM: 'item',
+  USER: 'user'
 };
 
 export interface Api {
@@ -22,7 +24,8 @@ export interface Api {
   ask(options: {}): Promise<Story[]>;
   show(options: {}): Promise<Story[]>;
   jobs(options: {}): Promise<Story[]>;
-  item(id: number): Promise<any>;
+  item(id: number): Promise<Item>;
+  user(id: number): Promise<User>;
 }
 
 /**
@@ -52,6 +55,9 @@ const api: Api = {
   jobs(options: {}) { 
     return storyFactory(apiMap.NEWS)(options); 
   },
+  user(id: number) {
+    return getUser(id);
+  },
   async item(id: number) {
     const itemsWithComments = await getItemAndComments(id);
     return itemMap(itemsWithComments!);
@@ -59,4 +65,3 @@ const api: Api = {
 };
 
 export default api;
-

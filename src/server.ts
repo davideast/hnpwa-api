@@ -45,6 +45,12 @@ export async function getItemAndComments(req: express.Request, res: express.Resp
   res.jsonp(item);
 }
 
+export async function getUserInfo(req: express.Request, res: express.Response) {
+  const userId = req.params[0];
+  const user = await api.user(userId);
+  res.jsonp(user);
+}
+
 // Middleware
 app.use(initializeApp);
 app.use(cacheControl);
@@ -53,6 +59,7 @@ app.use(compression());
 // GET Routes
 app.get(routes.NEWS_AND_STUFF, getNewsAndStuff);
 app.get(routes.ITEM, getItemAndComments);
+app.get(routes.USER, getUserInfo);
 app.get('/favicon.ico', (req, res) => res.status(204).end());
 
 /**
