@@ -1,12 +1,13 @@
 {
   "name": "hnpwa-api",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "Hacker News API on Cloud Functions",
   "scripts": {
     "build": "tsc",
     "watch": "node_modules/.bin/tsc -w",
     "serve": "node_modules/.bin/nodemon functions/hnpwa-api/server.js dev",
-    "deploy": "npm run build && firebase deploy --only functions"
+    "deploy": "npm run build && firebase deploy --only functions",
+    "pack": "npm run build && cp ./package.json ./dist/package.json && npm pack dist"
   },
   "dependencies": {
     "@types/compression": "0.0.33",
@@ -21,6 +22,7 @@
     "firebase-functions": "^0.5",
     "moment": "^2.18.1"
   },
+  "typings": "index.d.ts",
   "private": true,
   "devDependencies": {
     "nodemon": "^1.11.0",

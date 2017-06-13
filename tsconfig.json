@@ -4,9 +4,10 @@
         "target": "es2015",
         "noImplicitAny": true,
         "sourceMap": false,
-        "outDir": "functions/hnpwa-api",
+        "outDir": "dist",
         "strictNullChecks": true,
-        "moduleResolution": "node"
+        "moduleResolution": "node",
+        "declaration": true
     },
     "files": [
         "src/index.ts"

@@ -4,7 +4,7 @@ import * as express from 'express';
 import * as compression from 'compression';
 import api from './api';
 
-const app = express();
+const server: express.Application = express();
 
 const routes = {
   NEWS_AND_STUFF: /^\/(news|news2|newest|ask|show|jobs)$/,
@@ -90,15 +90,15 @@ export async function getUserInfo(req: express.Request, res: express.Response) {
 }
 
 // Middleware
-app.use(initializeApp);
-app.use(cacheControl);
-app.use(compression());
+server.use(initializeApp);
+server.use(cacheControl);
+server.use(compression());
 
 // GET Routes
-app.get(routes.NEWS_AND_STUFF, getNewsAndStuff);
-app.get(routes.ITEM, getItemAndComments);
-app.get(routes.USER, getUserInfo);
-app.get('/favicon.ico', (req, res) => res.status(204).end());
+server.get(routes.NEWS_AND_STUFF, getNewsAndStuff);
+server.get(routes.ITEM, getItemAndComments);
+server.get(routes.USER, getUserInfo);
+server.get('/favicon.ico', (req, res) => res.status(204).end());
 
 /**
  * Helper function for detecting the "dev" argument. This allows
@@ -110,7 +110,7 @@ function isDevMode() {
 }
 
 if(isDevMode()) {
-  app.listen('3002', () => console.log('listening on 3002'));
+  server.listen('3002', () => console.log('listening on 3002'));
 }
 
-export { app };
+export { server };
