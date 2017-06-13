@@ -1,4 +1,5 @@
 import * as url from 'url';
+import * as moment from 'moment';
 
 export interface HackerNewsItem {
   /** The item's unique id */
@@ -83,7 +84,7 @@ export const story = (item: HackerNewsItem): Story => {
     points: item.score,
     user: item.by,
     time: item.time,
-    time_ago: "sometime ago",
+    time_ago: moment(item.time*1000).fromNow(),
     comments_count: commentsCount,
     type: typeMapping[item.type] || item.type
   };
@@ -136,7 +137,7 @@ export function itemTransform(tree: HackerNewsItemTree, level = 0) {
       points: item.score,
       user: item.by,
       time: item.time, 
-      time_ago: "",
+      time_ago: moment(tree.item.time*1000).fromNow(),
       type: typeMapping[item.type] || item.type,
       content: item.deleted ? '[deleted]' : cleanText(item.text),
       deleted: item.deleted,

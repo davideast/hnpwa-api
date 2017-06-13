@@ -1,4 +1,14 @@
 import * as functions from 'firebase-functions';
+import * as cors from 'cors';
 import { app } from './server';
 
-export let api = functions.https.onRequest(app);
+let httpHandler = () => {
+   const corsServer = cors({ origin: true });
+   return functions.https.onRequest((req, res) => {
+      corsServer(req, res, () => {
+         app(req, res);
+      });
+   });
+};
+
+module.exports = httpHandler;
