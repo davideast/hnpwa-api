@@ -4,7 +4,8 @@
   "description": "Hacker News API on Cloud Functions",
   "scripts": {
     "build": "tsc",
-    "serve": "npm run build && node functions/server dev"
+    "watch": "node_modules/.bin/tsc -w",
+    "serve": "node_modules/.bin/nodemon functions/server.js dev"
   },
   "dependencies": {
     "@types/compression": "0.0.33",
@@ -17,5 +18,9 @@
     "firebase-functions": "^0.5",
     "node-fetch": "^1.7.0"
   },
-  "private": true
+  "private": true,
+  "devDependencies": {
+    "nodemon": "^1.11.0",
+    "typescript": "^2.3.4"
+  }
 }
