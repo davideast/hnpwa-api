@@ -34,6 +34,11 @@ export interface HackerNewsItem {
   descendants: number;
 }
 
+/**
+ * UI friendly "story" representation. Based on the HackerNewsItem which is
+ * returned directly from the HN API. Used for feeds like "news", "jobs", 
+ * "ask", "show", etc...
+ */
 export interface Story {
   id: number;
   title: string;
@@ -47,6 +52,10 @@ export interface Story {
   domain?: string;
 }
 
+/**
+ * UI friendly "item" representation. Based on the HackerNewsItem which is
+ * returned directly from the HN API. Used mostly to represent comments.
+ */
 export interface Item {
   id: number;
   title: string;
@@ -65,6 +74,9 @@ export interface Item {
   comments_count: number;
 }
 
+/**
+ * Represents a tree of an item and its comments.
+ */
 export interface HackerNewsItemTree {
    item: HackerNewsItem;
    comments: (HackerNewsItemTree | null)[];
@@ -126,7 +138,7 @@ function parseUrl(item: HackerNewsItem, story: any) {
 }
 
 /**
- * 
+ * Transform the HackerNewsItemTree to a UI friendly Item model.
  * @param tree 
  */
 export function itemTransform(tree: HackerNewsItemTree, level = 0) {
@@ -158,7 +170,13 @@ export function itemTransform(tree: HackerNewsItemTree, level = 0) {
    return mappedItem;
 }
 
-
+/**
+ * Tramsforms a HackerNewsItemTree to a UI friendly Item model. This method 
+ * does more than you wish it would have to do. The HN API does not return 
+ * an accurate number of comments for a "story". Therefore Each tree must
+ * be recursed and each item's comment array is reduced up to create the total.
+ * @param tree 
+ */
 export function itemMap(tree: HackerNewsItemTree) {
   const root = itemTransform(tree);
   // root level is a story, not a comment thread
@@ -172,7 +190,8 @@ export function itemMap(tree: HackerNewsItemTree) {
 }
 
 /**
- * Format comment items recursively. Each comment can contain an array of comments
+ * Format and count comment items recursively. Each comment can contain 
+ * an array of comments.
  * @param tree 
  * @param level 
  */

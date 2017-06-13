@@ -39,6 +39,9 @@ function storyFactory(key: ApiString) {
   return (options: {}) => stories(key, options);
 }
 
+/**
+ * The aggregated API for interfacing with Hacker News.
+ */
 const api: Api = {
   news(options: {}): Promise<Story[]> { 
     return storyFactory(apiMap.NEWS)(options); 

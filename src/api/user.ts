@@ -9,6 +9,10 @@ export interface User {
    karma: number;  
 }
 
+/**
+ * Get a user by their id and transform into a UI friendly JSON object.
+ * @param id - The user's id
+ */
 export async function getUser(id: number): Promise<User | null> {
    const userRef = firebase.database().ref('v0').child('user').child(id.toString());
    const snapshot = await userRef.once('value');

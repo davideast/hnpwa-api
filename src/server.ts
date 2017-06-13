@@ -14,37 +14,75 @@ const routes = {
   USER: /^\/user\/(\w+)$/,
 };
 
-function roundDown(page: string) {
-  return Math.min(10, Math.max(1, parseInt(page, 10) || 1));
+/**
+ * Return a number within a maximum boundary. If the boundary of 10 is supplied
+ * and 11 is passed as the page, 10 is returned. 
+ * 
+ * 10 = withinBounds(11, 10);
+ * 1 = withinBounds(1, 10);
+ * @param page 
+ */
+function withinBounds(page: string, bounds: number = 10) {
+  return Math.min(bounds, Math.max(1, parseInt(page, 10) || 1));
 }
 
+/**
+ * Initializes the default App instance if none exists. This middleware assumes
+ * that there is only one Firebase app instance.
+ * @param req 
+ * @param res 
+ * @param next 
+ */
 function initializeApp(req: express.Request, res: express.Response, next: Function) {
-  // This assumes only one firebase app instance
   if(firebase.apps.length === 0) {
     firebase.initializeApp({ databaseURL: 'https://hacker-news.firebaseio.com/' });
   }
   next();
 }
 
+/**
+ * Adds a 5 minute browser cache and 10 minute CDN cache for each route.
+ * @param req 
+ * @param res 
+ * @param next 
+ */
 function cacheControl(req: express.Request, res: express.Response, next: Function) {
-  // Cache in browser for 5 min and in on CDN for 10 min
   res.set('Cache-Control', 'public, max-age=300, s-maxage=600');
   next();
 }
 
+/**
+ * Get a list of "stories" based on the parameters provided. This API maps to the
+ * traditional "top bar" (news, ask, jobs, show) in HN UI's. Paging is provided 
+ * through the ?page query param.
+ * @param req 
+ * @param res 
+ */
 export async function getNewsAndStuff(req: express.Request, res: express.Response) {
-  const base = req.params[0];
-  const page = roundDown(req.query.page);
+  const base = req.params[0]; // "news" | "ask" | "jobs" | "show" etc...
+  const page = withinBounds(req.query.page);
   const newsies = await api[base]({ page });
   res.jsonp(newsies);
 }
 
+/**
+ * Get an item and it's comments from a request id param and return the JSON representation of 
+ * the user.
+ * @param req 
+ * @param res 
+ */
 export async function getItemAndComments(req: express.Request, res: express.Response) {
   const itemId = req.params[0];
   const item = await api.item(itemId);
   res.jsonp(item);
 }
 
+/**
+ * Get a user from a request id param and return the JSON representation of 
+ * the user.
+ * @param req 
+ * @param res 
+ */
 export async function getUserInfo(req: express.Request, res: express.Response) {
   const userId = req.params[0];
   const user = await api.user(userId);
