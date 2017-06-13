@@ -65,7 +65,7 @@ function isDevMode() {
 }
 
 if(isDevMode()) {
-  app.listen('3002', () => console.log('listening'));
+  app.listen('3002', () => console.log('listening on 3002'));
 }
 
 export { app };
