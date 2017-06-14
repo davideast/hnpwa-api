@@ -4,17 +4,6 @@ Deploy a CDN cached Hacker News API to your own Firebase Hosting Domain. All in 
 
 **Heavily** inspired/guided by [cheeaun's](https://github.com/cheeaun) [node-hnapi](https://github.com/cheeaun/node-hnapi).
 
-## Why?
-Two reasons: **latency** and **same domain**.
-
-### Latency
-This API is designed for Firebase Hosting which is backed by a global CDN. Responses are cached in edges around the globe which results in low latency.
-
-[Latency test: CDN cached vs. in memory cache](https://latency.apex.sh/?url=https%3A%2F%2Fhnpwa-api.firebaseapp.com%2Fnews%3Fpage%3D1&compare=https%3A%2F%2Fnode-hnapi.herokuapp.com%2Fnews%3Fpage%3D1)
-
-### Same domain
-With HTTP/2 you reuse one connection per domain. This package allows you to easily deploy your own HNAPI on your own domain for one nice TCP connection.
-
 ## Install
 ```bash
 npm i hnpwa-api
@@ -33,6 +22,17 @@ exports.api = hnapi.app({
    localPort: 3002 // serves locally when passed, remove for production
 });
 ```
+
+## Why?
+Two reasons: **latency** and **same domain**.
+
+### Latency
+This API is designed for Firebase Hosting which is backed by a global CDN. Responses are cached in edges around the globe which results in low latency.
+
+[Latency test: CDN cached vs. in memory cache](https://latency.apex.sh/?url=https%3A%2F%2Fhnpwa-api.firebaseapp.com%2Fnews%3Fpage%3D1&compare=https%3A%2F%2Fnode-hnapi.herokuapp.com%2Fnews%3Fpage%3D1)
+
+### Same domain
+With HTTP/2 you reuse one connection per domain. This package allows you to easily deploy your own HNAPI on your own domain for one nice TCP connection.
 
 ## Setup Tutorial
 
@@ -53,7 +53,7 @@ cd functions
 npm i hnpwa-api --save # not needed on npm 5 but you get what im sayin
 ```
 
-#### 3. Add HNAPI endpoint
+#### 4. Add HNAPI endpoint
 Open `functions/index.js`, and configure your HNAPI.
 
 ```js
@@ -68,12 +68,12 @@ exports.api = hnapi.app({
 });
 ```
 
-#### 4. Initialize Firebase Hosting
+#### 5. Initialize Firebase Hosting
 ```bash
 firebase init hosting
 ```
 
-#### 5. Create a redirect for the API function
+#### 6. Create a redirect for the API function
 Open `firebase.json` and create a redirect to call out to the HNAPI:
 ```json
 {
@@ -87,7 +87,7 @@ Open `firebase.json` and create a redirect to call out to the HNAPI:
 }
 ```
 
-#### 6. Deploy!
+#### 7. Deploy!
 ```bash
 firebase deploy
 ```
