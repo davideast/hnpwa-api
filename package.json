@@ -5,7 +5,7 @@
   "scripts": {
     "build": "tsc && cp ./package.json ./dist/package.json && cp .npmignore ./dist/.npmignore",
     "watch": "node_modules/.bin/tsc -w",
-    "serve": "npm run build && node_modules/.bin/nodemon ./dist/test/serve.js",
+    "serve": "npm run build && node_modules/.bin/nodemon ./dist/test/serve.test.js",
     "pack": "npm run build && npm pack dist"
   },
   "dependencies": {
