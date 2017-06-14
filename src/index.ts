@@ -1,42 +1,37 @@
 import * as functions from 'firebase-functions';
 import * as cors from 'cors';
 import * as express from 'express';
-import { createExpressApp, ApiConfig, } from './server';
+import { createExpressApp, ApiConfig, createBareExpressApp, FIREBASE_APP_NAME } from './server';
 
 export type Trigger = functions.TriggerAnnotated & ((req: Express.Request, resp: Express.Response) => void);
 
 /**
- * Helper function for detecting the "dev" argument. This allows
- * you to run the server locally with `node server dev`.
+ * Configure the Cloud Function Trigger based on options. The configuration
+ * allows you to set cache expiration, enable cors, enable compression,
+ * set the Firebase App instance name, and set a local port for testing. The 
+ * local port should not be used in production.
+ * @param config
  */
-function isDevMode() {
-   const args = process.argv.slice(2);
-   return args.find(arg => arg === 'dev');
-}
-
-/**
- * Configure the HttpHandler based on user's options. 
- * @param config { useCors: boolean }
- */
-export let app = (config: ApiConfig): Trigger => {
+export let trigger = (config?: ApiConfig): Trigger => {
    // merge defaults with config
-   config = {
+   const mergedConfig = {
       ...config,
       useCors: false,
       cdnCacheExpiry: 600,
       browserCacheExpiry: 300,
-      firebaseAppName: 'hnpwa-api',
+      firebaseAppName: FIREBASE_APP_NAME,
       useCompression: true
    };
 
-   const expressApp = createExpressApp(config);
+   const expressApp = createExpressApp(mergedConfig);
 
-   if (config.localPort) {
-      expressApp.listen(`${config.localPort}`, () => console.log(`listening on ${config.localPort}`));
+   if (mergedConfig.localPort) {
+      const port = mergedConfig.localPort;
+      expressApp.listen(`${port}`, () => console.log(`Listening on ${port}!`));
    }
 
    // wrap in cors if cors enabled
-   if (config.useCors) {
+   if (mergedConfig.useCors) {
       const corsServer = cors({ origin: true });
       return functions.https.onRequest((req, res) => {
          corsServer(req, res, () => {
@@ -47,3 +42,5 @@ export let app = (config: ApiConfig): Trigger => {
       return functions.https.onRequest(expressApp);
    }
 };
+
+export let app = createBareExpressApp;

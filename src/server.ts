@@ -5,6 +5,18 @@ import * as compression from 'compression';
 import { Api } from './api';
 import api from './api';
 
+export const FIREBASE_APP_NAME = 'hnpwa-api';
+
+export interface ApiConfig {
+   useCors?: boolean;
+   useCompression?: boolean;
+   browserCacheExpiry?: number;
+   cdnCacheExpiry?: number;
+   firebaseAppName?: string;
+   localPort?: number;
+}
+
+
 // Hash of route matchers
 const routes = {
   NEWS_AND_STUFF: /^\/(news|news2|newest|ask|show|jobs)$/,
@@ -71,15 +83,6 @@ export function getUserInfo(hnapi: Api) {
   };
 }
 
-export interface ApiConfig {
-   useCors?: boolean;
-   useCompression?: boolean;
-   browserCacheExpiry?: number;
-   cdnCacheExpiry?: number;
-   firebaseAppName?: string;
-   localPort?: number;
-}
-
 /**
  * Creates a firebase app instance based on the configuration name.
  * @param config 
@@ -105,27 +108,40 @@ function cacheControl(config: ApiConfig) {
    };
 }
 
-/**
- * Create an express application object based on the configuration passed in.
- * @param config 
- */
-export function createExpressApp(config: ApiConfig) {
+export function configureExpressRoutes(config: ApiConfig) {
   const expressApp: express.Application = express();
-
   // Init firebase app instance
   const firebaseApp = initializeApp(config);
   // Create API instance from firebaseApp
   const hnapi = api(firebaseApp);
 
-  // Middleware
-  if(config.useCompression) { expressApp.use(compression()); }
-  expressApp.use(cacheControl(config));
-  
-  // GET Routes
   expressApp.get(routes.NEWS_AND_STUFF, getNewsAndStuff(hnapi));
   expressApp.get(routes.ITEM, getItemAndComments(hnapi));
   expressApp.get(routes.USER, getUserInfo(hnapi));
-  expressApp.get('/favicon.ico', (req, res) => res.status(204).end());
+  expressApp.get('/favicon.ico', (req, res) => res.status(204).end());  
 
   return expressApp;
+}
+
+/**
+ * Create an express application object based on the configuration passed in.
+ * @param config 
+ */
+export function createExpressApp(config: ApiConfig) {
+  const expressApp = configureExpressRoutes(config);
+
+  // Configure middleware
+  if(config.useCompression) { expressApp.use(compression()); }
+  expressApp.use(cacheControl(config));
+
+  return expressApp;
+}
+
+/**
+ * Create an express app instance without the middleware configuration.
+ * This is used for testing or applications not hosted on Firebase Hosting.
+ * @param firebaseAppName 
+ */
+export function createBareExpressApp(firebaseAppName = FIREBASE_APP_NAME) {
+  return configureExpressRoutes({ firebaseAppName });
 }

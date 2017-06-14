@@ -2,3 +2,5 @@ functions
 node_modules
 public
 dist
+npm-debug.log
+database.rules.json
