@@ -1,6 +1,6 @@
 # HNPWA API
 
-An unofficial CDN cached Hacker News API deployed to your own Firebase Hosting domain. All in two lines of code 😎.
+Deploy a CDN cached Hacker News API to your own Firebase Hosting Domain. All in two lines of code 😎.
 
 **Heavily** inspired/guided by [cheeaun's](https://github.com/cheeaun) [node-hnapi](https://github.com/cheeaun/node-hnapi).
 
@@ -8,13 +8,12 @@ An unofficial CDN cached Hacker News API deployed to your own Firebase Hosting d
 Two reasons: **latency** and **same domain**.
 
 ### Latency
-If you're building an HNPWA you'll need to cut down on latency across the globe. This API is designed for Firebase Hosting which is backed by a global CDN. Responses are cached in edges around the globe which results in low latency.
+This API is designed for Firebase Hosting which is backed by a global CDN. Responses are cached in edges around the globe which results in low latency.
 
 [Latency test: CDN cached vs. in memory cache](https://latency.apex.sh/?url=https%3A%2F%2Fhnpwa-api.firebaseapp.com%2Fnews%3Fpage%3D1&compare=https%3A%2F%2Fnode-hnapi.herokuapp.com%2Fnews%3Fpage%3D1)
 
-
 ### Same domain
-With HTTP/2 you reuse one connection per domain. If your API is on a separate domain, that's two TCP connections instead of one. This package allows you to easily deploy your own HNAPI on your own domain for one nice TCP connection.
+With HTTP/2 you reuse one connection per domain. This package allows you to easily deploy your own HNAPI on your own domain for one nice TCP connection.
 
 ## Install
 ```bash
@@ -31,11 +30,11 @@ exports.api = hnapi.app({
    browserCacheExpiry: 300, // in seconds (5 min is the default)
    cdnCacheExpiry: 600, // in seconds (10 min is the default)
    firebaseAppName: 'hnpwa-api', // defaults to 'hnpwa-api'
-   port: 3002 // serves locally when passed, remove for production
+   localPort: 3002 // serves locally when passed, remove for production
 });
 ```
 
-### Setup Tutorial
+## Setup Tutorial
 
 #### 1. Install the Firebase CLI: 
 ```bash
@@ -65,7 +64,7 @@ exports.api = hnapi.app({
    browserCacheExpiry: 300, // in seconds (5 min is the default)
    cdnCacheExpiry: 600, // in seconds (10 min is the default)
    firebaseAppName: 'hnpwa-api', // defaults to hnpwa-api
-   port: 3002 // serves locally when passed, remove for production
+   localPort: 3002 // serves locally when passed, remove for production
 });
 ```
 
@@ -99,6 +98,7 @@ That's all there is to it. Feel free to file an issue if you find a bug.
 ```bash
 git clone https://github.com/davideast/hnpwa-api/
 npm i
+npm run build # single build of the project
 npm run watch # typescript (tsc) watcher
 npm run serve # local nodemon server
 npm run pack # local tarball for test installations
