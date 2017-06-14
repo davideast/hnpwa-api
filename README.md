@@ -1,6 +1,6 @@
 # HNPWA API
 
-Deploy a CDN cached Hacker News API to your own Firebase Hosting Domain. All in two lines of code 😎.
+Deploy a CDN cached Hacker News API to your own Firebase Hosting Domain. All in two lines of code 😎
 
 **Heavily** inspired/guided by [cheeaun's](https://github.com/cheeaun) [node-hnapi](https://github.com/cheeaun/node-hnapi).
 
@@ -13,7 +13,7 @@ npm i hnpwa-api
 Import and use in your `functions/index.js` file:
 ```js
 const hnapi = require('hnpwa-api');
-exports.api = hnapi.app({
+exports.api = hnapi.trigger({
    useCors: false, // defaults to false
    useCompression: true, // defaults to true
    browserCacheExpiry: 300, // in seconds (5 min is the default)
@@ -58,7 +58,7 @@ Open `functions/index.js`, and configure your HNAPI.
 
 ```js
 const hnapi = require('hnpwa-api');
-exports.api = hnapi.app({
+exports.api = hnapi.trigger({
    useCors: false, // defaults to false
    useCompression: true, // defaults to true
    browserCacheExpiry: 300, // in seconds (5 min is the default)
@@ -93,6 +93,22 @@ firebase deploy
 ```
 
 That's all there is to it. Feel free to file an issue if you find a bug.
+
+
+## Non-Firebase setup
+Not using Cloud Functions or Firebase Hosting as your backend? No problem. This library still has you covered.
+
+```js
+const hnapi = require('hnpwa-api');
+// does not include any middleware like the trigger() call above
+const expressApp = hnapi.app(); // optionally provide a firebase app name
+expressApp.listen(3000, () => console.log('Listening all on my own!'));
+```
+
+This returns an express app instance with the expected HN API endpoints. No middleware is attached unlike the `trigger(config)` method. 
+
+### Why do I need a Firebase App Name if not using Firebase Hosting?
+You may not use Firebase as your backed, but Hacker News does. The base HN API is backed by the Firebase Database. This library uses the Firebase Node SDK to retrieve data and coalesce it into a single UI friendly response.
 
 ### Local Setup
 ```bash
