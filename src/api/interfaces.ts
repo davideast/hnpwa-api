@@ -127,6 +127,11 @@ function cleanText(html: string): string {
   return html;
 }
 
+/**
+ * Transform a story item's url and domain to a UI friendly format.
+ * @param item
+ * @param story 
+ */
 function parseUrl(item: HackerNewsItem, story: any) {
   if (item.url) {
     story.url = item.url;

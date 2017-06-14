@@ -5,7 +5,7 @@ An unofficial CDN cached Hacker News API deployed to your own Firebase Hosting d
 **Heavily** inspired/guided by [cheeaun's](https://github.com/cheeaun) [node-hnapi](https://github.com/cheeaun/node-hnapi).
 
 ## Why?
-Two reasons: latency and same domain.
+Two reasons: **latency** and **same domain**.
 
 ### Latency
 If you're building an HNPWA you'll need to cut down on latency across the globe. This API is designed for Firebase Hosting which is backed by a global CDN. Responses are cached in edges around the globe which results in low latency.
@@ -25,7 +25,14 @@ npm i hnpwa-api
 Import and use in your `functions/index.js` file:
 ```js
 const hnapi = require('hnpwa-api');
-exports.api = hnapi.app({ useCors: true }); 
+exports.api = hnapi.app({
+   useCors: false, // defaults to false
+   useCompression: true, // defaults to true
+   browserCacheExpiry: 300, // in seconds (5 min is the default)
+   cdnCacheExpiry: 600, // in seconds (10 min is the default)
+   firebaseAppName: 'hnpwa-api', // defaults to 'hnpwa-api'
+   port: 3002 // serves locally when passed, remove for production
+});
 ```
 
 ### Setup Tutorial
@@ -54,7 +61,11 @@ Open `functions/index.js`, and configure your HNAPI.
 const hnapi = require('hnpwa-api');
 exports.api = hnapi.app({
    useCors: false, // defaults to false
-   cacheExpiry: 600 // seconds (10 minutes here)
+   useCompression: true, // defaults to true
+   browserCacheExpiry: 300, // in seconds (5 min is the default)
+   cdnCacheExpiry: 600, // in seconds (10 min is the default)
+   firebaseAppName: 'hnpwa-api', // defaults to hnpwa-api
+   port: 3002 // serves locally when passed, remove for production
 });
 ```
 

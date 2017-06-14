@@ -7,12 +7,12 @@ import * as firebase from 'firebase';
  * @param topic - topstories, newstories, askstories, jobstories, etc...
  * @param options - { page: number }
  */
-export async function stories(topic: string, options: {}) {
+export async function stories(topic: string, options: {}, firebaseApp: firebase.app.App) {
   const opts = { page: 1, ...options };
   const limit = 30;
   const startIndex = (opts.page-1) * limit;
   const endIndex = startIndex + limit;
-  const ref = firebase.database().ref('v0');
+  const ref = firebaseApp.database().ref('v0');
   const storyRef = ref.child(topic).limitToFirst(limit * opts.page);
   const stories = await storyRef.once('value');
   const items: number[] = stories.val().slice(startIndex, endIndex);
