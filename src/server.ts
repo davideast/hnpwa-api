@@ -16,7 +16,6 @@ export interface ApiConfig {
    localPort?: number;
 }
 
-
 // Hash of route matchers
 const routes = {
   NEWS_AND_STUFF: /^\/(news|news2|newest|ask|show|jobs)$/,
