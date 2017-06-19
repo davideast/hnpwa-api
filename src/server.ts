@@ -18,11 +18,9 @@ export interface ApiConfig {
 
 // Hash of route matchers
 const routes = {
-  NEWS_AND_STUFF: /^\/(news|news2|newest|ask|show|jobs)$/,
-  BEST_IN_SHOW: /^\/(shownew|best|active|noobstories)$/,
-  ITEM: /^\/item\/(\d+)$/,
-  NEW_COMMENTS: '/newcomments',
-  USER: /^\/user\/(\w+)$/,
+  NEWS_AND_STUFF: /^\/(news.json|newest.json|ask.json|show.json|jobs.json)$/,
+  ITEM: /^\/item\/(\d+).json$/,
+  USER: /^\/user\/(\w+).json$/,
 };
 
 /**
@@ -47,9 +45,10 @@ function withinBounds(page: string, maxBounds = 10) {
  */
 export function getNewsAndStuff(hnapi: Api) {
   return async (req: express.Request, res: express.Response) => {
-    const base = req.params[0]; // "news" | "ask" | "jobs" | "show" etc...
+    // "news" | "ask" | "jobs" | "show" etc...
+    const topic = req.params[0].replace('.json', ''); 
     const page = withinBounds(req.query.page);
-    const newsies = await hnapi[base]({ page });
+    const newsies = await hnapi[topic]({ page });
     res.jsonp(newsies);
   };
 }

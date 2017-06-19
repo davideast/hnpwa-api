@@ -60,7 +60,7 @@ const api: ApiCreator = (app: firebase.app.App) => {
       return storyFactory(apiMap.SHOW, app)(options);
     },
     jobs(options: {}) {
-      return storyFactory(apiMap.NEWS, app)(options);
+      return storyFactory(apiMap.JOBS, app)(options);
     },
     user(id: number) {
       return getUser(id, app);
