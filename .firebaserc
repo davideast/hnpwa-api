@@ -1,5 +1,6 @@
 {
   "projects": {
-    "default": "hnpwa-api"
+    "default": "hnpwa-api",
+    "prod": "hnpwa-api"
   }
 }
