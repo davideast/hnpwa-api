@@ -15,14 +15,14 @@ export type Trigger = functions.TriggerAnnotated & ((req: Express.Request, resp:
 export let trigger = (config?: ApiConfig): Trigger => {
    // merge defaults with config
    const mergedConfig = {
-      ...config,
       useCors: false,
       cdnCacheExpiry: 600,
       browserCacheExpiry: 300,
       firebaseAppName: FIREBASE_APP_NAME,
-      useCompression: true
+      useCompression: true,
+      ...config,
    };
-
+   
    const expressApp = createExpressApp(mergedConfig);
 
    if (mergedConfig.localPort) {

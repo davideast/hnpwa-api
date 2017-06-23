@@ -106,8 +106,7 @@ function cacheControl(config: ApiConfig) {
    };
 }
 
-export function configureExpressRoutes(config: ApiConfig) {
-  const expressApp: express.Application = express();
+export function configureExpressRoutes(expressApp: express.Application, config: ApiConfig) {
   // Init firebase app instance
   const firebaseApp = initializeApp(config);
   // Create API instance from firebaseApp
@@ -126,11 +125,14 @@ export function configureExpressRoutes(config: ApiConfig) {
  * @param config 
  */
 export function createExpressApp(config: ApiConfig) {
-  const expressApp = configureExpressRoutes(config);
+  let expressApp: express.Application = express();
 
   // Configure middleware
   if(config.useCompression) { expressApp.use(compression()); }
   expressApp.use(cacheControl(config));
+
+  // apply routes
+  expressApp = configureExpressRoutes(expressApp, config);
 
   return expressApp;
 }
@@ -141,5 +143,5 @@ export function createExpressApp(config: ApiConfig) {
  * @param firebaseAppName 
  */
 export function createBareExpressApp(firebaseAppName = FIREBASE_APP_NAME) {
-  return configureExpressRoutes({ firebaseAppName });
+  return configureExpressRoutes(express(), { firebaseAppName });
 }
