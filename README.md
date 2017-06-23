@@ -29,7 +29,7 @@ Two reasons: **latency** and **same domain**.
 ### Latency
 This API is designed for Firebase Hosting which is backed by a global CDN. Responses are cached in edges around the globe which results in low latency.
 
-[Latency test: CDN cached vs. in memory cache](https://latency.apex.sh/?url=https%3A%2F%2Fhnpwa-api.firebaseapp.com%2Fnews%3Fpage%3D1&compare=https%3A%2F%2Fnode-hnapi.herokuapp.com%2Fnews%3Fpage%3D1)
+[Latency test: CDN cached vs. in memory cache](https://latency.apex.sh/?url=https%3A%2F%2Fhnpwa-api.firebaseapp.com%2Fnews.json%3Fpage%3D1&compare=https%3A%2F%2Fnode-hnapi.herokuapp.com%2Fnews%3Fpage%3D1)
 
 ### Same domain
 With HTTP/2 you reuse one connection per domain. This package allows you to easily deploy your own HNAPI on your own domain for one nice TCP connection.
