@@ -9,9 +9,11 @@ export const FIREBASE_APP_NAME = 'hnpwa-api';
 
 export interface ApiConfig {
    useCors?: boolean;
+   routerPath?: string;
    useCompression?: boolean;
    browserCacheExpiry?: number;
    cdnCacheExpiry?: number;
+   staleWhileRevalidate?: number;
    firebaseAppName?: string;
    localPort?: number;
 }
@@ -99,13 +101,19 @@ function initializeApp(config: ApiConfig): firebase.app.App {
  * @param config 
  */
 function cacheControl(config: ApiConfig) {
-   const { cdnCacheExpiry, browserCacheExpiry } = config;
+   const { cdnCacheExpiry, browserCacheExpiry, staleWhileRevalidate } = config;
    return (req: express.Request, res: express.Response, next: Function) => {
-      res.set('Cache-Control', `public, max-age=${browserCacheExpiry}, s-maxage=${cdnCacheExpiry}`);
+      res.set('Cache-Control', `public, max-age=${browserCacheExpiry}, s-maxage=${cdnCacheExpiry}, stale-while-revalidate=${staleWhileRevalidate}`);
       next();
    };
 }
 
+/**
+ * Attaches express route handlers for the HNAPI given a Firebase App instance and
+ * a user's config.
+ * @param expressApp 
+ * @param config 
+ */
 export function configureExpressRoutes(expressApp: express.Application, config: ApiConfig) {
   // Init firebase app instance
   const firebaseApp = initializeApp(config);

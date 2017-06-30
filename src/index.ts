@@ -16,8 +16,10 @@ export let trigger = (config?: ApiConfig): Trigger => {
    // merge defaults with config
    const mergedConfig = {
       useCors: false,
+      routerPath: '',
       cdnCacheExpiry: 600,
       browserCacheExpiry: 300,
+      staleWhileRevalidate: 120,
       firebaseAppName: FIREBASE_APP_NAME,
       useCompression: true,
       ...config,
@@ -30,16 +32,20 @@ export let trigger = (config?: ApiConfig): Trigger => {
       expressApp.listen(`${port}`, () => console.log(`Listening on ${port}!`));
    }
 
+   const router = express.Router();
+   router.use(mergedConfig.routerPath, expressApp);
+   const tscRouterHack = router as any;
+
    // wrap in cors if cors enabled
    if (mergedConfig.useCors) {
       const corsServer = cors({ origin: true });
       return functions.https.onRequest((req, res) => {
          corsServer(req, res, () => {
-            expressApp(req, res);
+            tscRouterHack(req, res);
          });
       });
    } else {
-      return functions.https.onRequest(expressApp);
+      return functions.https.onRequest(tscRouterHack);
    }
 };
 

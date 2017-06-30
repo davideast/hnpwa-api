@@ -1,7 +1,7 @@
 {
   "name": "hnpwa-api",
-  "version": "0.0.4",
-  "description": "Easily deploy a Hacker News API on your own Firebase Hosting domain.",
+  "version": "0.0.5",
+  "description": "Deploy a Hacker News API on your own Firebase Hosting domain.",
   "main": "index.js",
   "scripts": {
     "build": "rm -rf dist && tsc && cp ./package.json ./dist/package.json && cp .npmignore ./dist/.npmignore && cp README.md ./dist/README.md",
