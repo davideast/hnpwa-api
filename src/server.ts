@@ -4,22 +4,24 @@ import * as express from 'express';
 import * as compression from 'compression';
 import { Api } from './api';
 import api from './api';
+import offlineApi from './offline/api';
 
 export const FIREBASE_APP_NAME = 'hnpwa-api';
 
 export interface ApiConfig {
-   useCors?: boolean;
-   routerPath?: string;
-   useCompression?: boolean;
-   browserCacheExpiry?: number;
-   cdnCacheExpiry?: number;
-   staleWhileRevalidate?: number;
-   firebaseAppName?: string;
-   localPort?: number;
+  useCors?: boolean;
+  routerPath?: string;
+  useCompression?: boolean;
+  browserCacheExpiry?: number;
+  cdnCacheExpiry?: number;
+  staleWhileRevalidate?: number;
+  firebaseAppName?: string;
+  localPort?: number;
+  offline?: boolean;
 }
 
 // Hash of route matchers
-const routes = {
+export const routes = {
   NEWS_AND_STUFF: /^\/(news.json|newest.json|ask.json|show.json|jobs.json)$/,
   ITEM: /^\/item\/(\d+).json$/,
   USER: /^\/user\/(\w+).json$/,
@@ -48,7 +50,7 @@ function withinBounds(page: string, maxBounds = 10) {
 export function getNewsAndStuff(hnapi: Api) {
   return async (req: express.Request, res: express.Response) => {
     // "news" | "ask" | "jobs" | "show" etc...
-    const topic = req.params[0].replace('.json', ''); 
+    const topic = req.params[0].replace('.json', '');
     const page = withinBounds(req.query.page);
     const newsies = await hnapi[topic]({ page });
     res.jsonp(newsies);
@@ -84,6 +86,24 @@ export function getUserInfo(hnapi: Api) {
 }
 
 /**
+ * Create a data api depending on the offline configuration. If offline is disabled
+ * the data api will retrieve data from Firebase server. Otherwise it will read from
+ * local files.
+ * @param config 
+ * @param firebaseApp 
+ */
+function getApi(config: ApiConfig, firebaseApp: firebase.app.App) {
+  let hnapi: Api;
+  if(!config.offline) {
+    hnapi = api(firebaseApp);
+  } else {
+    // firebase app does nothing here
+    hnapi = offlineApi(firebaseApp);
+  }  
+  return hnapi;
+}
+
+/**
  * Creates a firebase app instance based on the configuration name.
  * @param config 
  */
@@ -101,11 +121,11 @@ function initializeApp(config: ApiConfig): firebase.app.App {
  * @param config 
  */
 function cacheControl(config: ApiConfig) {
-   const { cdnCacheExpiry, browserCacheExpiry, staleWhileRevalidate } = config;
-   return (req: express.Request, res: express.Response, next: Function) => {
-      res.set('Cache-Control', `public, max-age=${browserCacheExpiry}, s-maxage=${cdnCacheExpiry}, stale-while-revalidate=${staleWhileRevalidate}`);
-      next();
-   };
+  const { cdnCacheExpiry, browserCacheExpiry, staleWhileRevalidate } = config;
+  return (req: express.Request, res: express.Response, next: Function) => {
+    res.set('Cache-Control', `public, max-age=${browserCacheExpiry}, s-maxage=${cdnCacheExpiry}, stale-while-revalidate=${staleWhileRevalidate}`);
+    next();
+  };
 }
 
 /**
@@ -118,12 +138,12 @@ export function configureExpressRoutes(expressApp: express.Application, config: 
   // Init firebase app instance
   const firebaseApp = initializeApp(config);
   // Create API instance from firebaseApp
-  const hnapi = api(firebaseApp);
+  let hnapi = getApi(config, firebaseApp);
 
   expressApp.get(routes.NEWS_AND_STUFF, getNewsAndStuff(hnapi));
   expressApp.get(routes.ITEM, getItemAndComments(hnapi));
   expressApp.get(routes.USER, getUserInfo(hnapi));
-  expressApp.get('/favicon.ico', (req, res) => res.status(204).end());  
+  expressApp.get('/favicon.ico', (req, res) => res.status(204).end());
 
   return expressApp;
 }
@@ -136,7 +156,7 @@ export function createExpressApp(config: ApiConfig) {
   let expressApp: express.Application = express();
 
   // Configure middleware
-  if(config.useCompression) { expressApp.use(compression()); }
+  if (config.useCompression) { expressApp.use(compression()); }
   expressApp.use(cacheControl(config));
 
   // apply routes

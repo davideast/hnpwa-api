@@ -14,7 +14,7 @@ export type Trigger = functions.TriggerAnnotated & ((req: Express.Request, resp:
  */
 export let trigger = (config?: ApiConfig): Trigger => {
    // merge defaults with config
-   const mergedConfig = {
+   const mergedConfig : ApiConfig = {
       useCors: false,
       routerPath: '',
       cdnCacheExpiry: 600,
@@ -22,6 +22,8 @@ export let trigger = (config?: ApiConfig): Trigger => {
       staleWhileRevalidate: 120,
       firebaseAppName: FIREBASE_APP_NAME,
       useCompression: true,
+      offline: false,
+      localPort: undefined,
       ...config,
    };
    
@@ -33,7 +35,7 @@ export let trigger = (config?: ApiConfig): Trigger => {
    }
 
    const router = express.Router();
-   router.use(mergedConfig.routerPath, expressApp);
+   router.use(mergedConfig.routerPath || '', expressApp);
    const tscRouterHack = router as any;
 
    // wrap in cors if cors enabled
@@ -44,7 +46,8 @@ export let trigger = (config?: ApiConfig): Trigger => {
             tscRouterHack(req, res);
          });
       });
-   } else {
+   }
+    else {
       return functions.https.onRequest(tscRouterHack);
    }
 };

@@ -1,11 +1,14 @@
 export * from './interfaces';
-import { Story, itemMap, HackerNewsItemTree, HackerNewsItem, Item } from './interfaces';
+import { Story, itemMap, HackerNewsItemTree, HackerNewsItem, Item, User } from './interfaces';
 import { stories } from './stories';
 import { getItemAndComments } from './item';
-import { getUser, User } from './user';
+import { getUser } from './user';
 
-export type ApiFn = (options:{}) => Promise<Story[]>;
+export type ApiFn = (options: {}) => Promise<Story[]>;
 export type ApiString = 'topstories' | 'newstories' | 'askstories' | 'showstories' | 'jobstories' | 'item' | 'user';
+export interface ApiOptions {
+  page: number;
+}
 
 // Constant Hash of API topics 
 export const apiMap: { [key: string]: ApiString } = {
@@ -20,13 +23,13 @@ export const apiMap: { [key: string]: ApiString } = {
 
 export interface Api {
   [key: string]: any;
-  news(options: {}): Promise<Story[]>;
-  newest(options: {}): Promise<Story[]>;
-  ask(options: {}): Promise<Story[]>;
-  show(options: {}): Promise<Story[]>;
-  jobs(options: {}): Promise<Story[]>;
+  news(options: ApiOptions): Promise<Story[]>;
+  newest(options: ApiOptions): Promise<Story[]>;
+  ask(options: ApiOptions): Promise<Story[]>;
+  show(options: ApiOptions): Promise<Story[]>;
+  jobs(options: ApiOptions): Promise<Story[]>;
   item(id: number): Promise<Item>;
-  user(id: number): Promise<User>;
+  user(id: number): Promise<User | null>;
 }
 
 export type ApiCreator = (app: firebase.app.App) => Api;
@@ -39,7 +42,7 @@ export type ApiCreator = (app: firebase.app.App) => Api;
  * @param options 
  */
 function storyFactory(key: ApiString, app: firebase.app.App) {
-  return (options: {}) => stories(key, options, app);
+  return (options: ApiOptions) => stories(key, options, app);
 }
 
 /**
@@ -47,19 +50,19 @@ function storyFactory(key: ApiString, app: firebase.app.App) {
  */
 const api: ApiCreator = (app: firebase.app.App) => {
   return {
-    news(options: {}): Promise<Story[]> {
+    news(options: ApiOptions): Promise<Story[]> {
       return storyFactory(apiMap.NEWS, app)(options);
     },
-    newest(options: {}) {
+    newest(options: ApiOptions) {
       return storyFactory(apiMap.NEWEST, app)(options);
     },
-    ask(options: {}) {
+    ask(options: ApiOptions) {
       return storyFactory(apiMap.ASK, app)(options);
     },
-    show(options: {}) {
+    show(options: ApiOptions) {
       return storyFactory(apiMap.SHOW, app)(options);
     },
-    jobs(options: {}) {
+    jobs(options: ApiOptions) {
       return storyFactory(apiMap.JOBS, app)(options);
     },
     user(id: number) {
