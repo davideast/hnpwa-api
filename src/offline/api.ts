@@ -2,7 +2,7 @@ import { Api, ApiCreator, ApiOptions, Story, Item, User } from '../api';
 
 const TEST_USER: User = { about: '', created_time: 1400006274, created: "3 years ago", id: "davideast", karma: 22 };
 
-const getFile = (topic: string): Story[] => {
+const getFile = (topic: string): Story[] | Item[] => {
   return require(__dirname + `/${topic}.json`);
 };
 
@@ -35,8 +35,9 @@ const offlineApi = (app: any) => {
     async user(id: number) {
       return TEST_USER as User;
     },
-    async item(id: number) {
-      return {} as Item;
+    async item(id: number): Promise<Item> {
+      const items = <Item[]>await getFile('items');
+      return items.find(item => item.id == id)!;
     }
   };
 };
