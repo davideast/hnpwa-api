@@ -1,26 +1,29 @@
 {
   "name": "hnpwa-api",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "Deploy a Hacker News API on your own Firebase Hosting domain.",
   "main": "index.js",
+  "bin" : { "hnpwa-api" : "./cli.js" },
   "scripts": {
-    "build": "rm -rf dist && tsc && cp ./package.json ./dist/package.json && cp .npmignore ./dist/.npmignore && cp README.md ./dist/README.md",
+    "tsc": "node_modules/.bin/tsc",
+    "build": "rm -rf dist && npm run tsc && cp ./package.json ./dist/package.json && cp .npmignore ./dist/.npmignore && cp README.md ./dist/README.md",
     "watch": "node_modules/.bin/tsc -w",
-    "serve": "npm run build && npm run copy:offline && node_modules/.bin/nodemon ./dist/test/serve.test.js",
-    "pack": "npm run build && npm pack dist",
-    "copy:offline": "cp -R src/offline/* dist/offline && rm dist/offline/api.ts"
+    "serve": "npm run build && node_modules/.bin/nodemon ./dist/test/serve.test.js",
+    "pack": "npm run build && npm pack dist"
   },
   "dependencies": {
     "@types/compression": "0.0.33",
     "@types/cors": "^2.8.1",
     "@types/express": "^4.0.35",
+    "@types/yargs": "^8.0.1",
     "compression": "^1.6.2",
     "cors": "^2.8.3",
     "express": "^4.15.3",
     "firebase": "^4.0.0",
     "firebase-admin": "^5.0.1",
     "firebase-functions": "^0.5",
-    "moment": "^2.18.1"
+    "moment": "^2.18.1",
+    "yargs": "^8.0.2"
   },
   "devDependencies": {
     "nodemon": "^1.11.0",

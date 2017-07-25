@@ -16,7 +16,6 @@ export interface ApiConfig {
   cdnCacheExpiry?: number;
   staleWhileRevalidate?: number;
   firebaseAppName?: string;
-  localPort?: number;
   offline?: boolean;
 }
 
@@ -107,7 +106,7 @@ function getApi(config: ApiConfig, firebaseApp: firebase.app.App) {
  * Creates a firebase app instance based on the configuration name.
  * @param config 
  */
-function initializeApp(config: ApiConfig): firebase.app.App {
+export function initializeApp(config: ApiConfig): firebase.app.App {
   const possibleApp = firebase.apps.find(app => app!.name === config.firebaseAppName);
   let app = possibleApp!;
   if (!possibleApp) {

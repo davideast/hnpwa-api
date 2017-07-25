@@ -9,6 +9,13 @@ export type ApiString = 'topstories' | 'newstories' | 'askstories' | 'showstorie
 export interface ApiOptions {
   page: number;
 }
+export const MAX_PAGES: { [key: string]: number } = {
+  "news": 10,
+  "jobs": 1,
+  "ask": 3,
+  "show": 2,
+  "/": 10
+};
 
 // Constant Hash of API topics 
 export const apiMap: { [key: string]: ApiString } = {

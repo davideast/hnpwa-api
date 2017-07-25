@@ -1,7 +1,10 @@
 import * as functions from 'firebase-functions';
 import * as cors from 'cors';
 import * as express from 'express';
-import { createExpressApp, ApiConfig, createBareExpressApp, FIREBASE_APP_NAME } from './server';
+
+import api from './api';
+import { createExpressApp, ApiConfig, createBareExpressApp, initializeApp, FIREBASE_APP_NAME } from './server';
+import { buildFiles } from './offline/build';
 
 export type Trigger = functions.TriggerAnnotated & ((req: Express.Request, resp: Express.Response) => void);
 
@@ -12,7 +15,7 @@ export type Trigger = functions.TriggerAnnotated & ((req: Express.Request, resp:
  * local port should not be used in production.
  * @param config
  */
-export let trigger = (config?: ApiConfig): Trigger => {
+export const trigger = (config?: ApiConfig): Trigger => {
    // merge defaults with config
    const mergedConfig : ApiConfig = {
       useCors: false,
@@ -23,16 +26,10 @@ export let trigger = (config?: ApiConfig): Trigger => {
       firebaseAppName: FIREBASE_APP_NAME,
       useCompression: true,
       offline: false,
-      localPort: undefined,
       ...config,
    };
    
    const expressApp = createExpressApp(mergedConfig);
-
-   if (mergedConfig.localPort) {
-      const port = mergedConfig.localPort;
-      expressApp.listen(`${port}`, () => console.log(`Listening on ${port}!`));
-   }
 
    const router = express.Router();
    router.use(mergedConfig.routerPath || '', expressApp);
@@ -52,4 +49,4 @@ export let trigger = (config?: ApiConfig): Trigger => {
    }
 };
 
-export let app = createBareExpressApp;
+export const app = createBareExpressApp;
