@@ -1,7 +1,10 @@
 import * as functions from 'firebase-functions';
 import * as cors from 'cors';
 import * as express from 'express';
-import { createExpressApp, ApiConfig, createBareExpressApp, FIREBASE_APP_NAME } from './server';
+
+import api from './api';
+import { createExpressApp, ApiConfig, createBareExpressApp, initializeApp, FIREBASE_APP_NAME } from './server';
+import { buildFiles } from './offline/build';
 
 export type Trigger = functions.TriggerAnnotated & ((req: Express.Request, resp: Express.Response) => void);
 
@@ -12,9 +15,9 @@ export type Trigger = functions.TriggerAnnotated & ((req: Express.Request, resp:
  * local port should not be used in production.
  * @param config
  */
-export let trigger = (config?: ApiConfig): Trigger => {
+export const trigger = (config?: ApiConfig): Trigger => {
    // merge defaults with config
-   const mergedConfig = {
+   const mergedConfig : ApiConfig = {
       useCors: false,
       routerPath: '',
       cdnCacheExpiry: 600,
@@ -22,18 +25,14 @@ export let trigger = (config?: ApiConfig): Trigger => {
       staleWhileRevalidate: 120,
       firebaseAppName: FIREBASE_APP_NAME,
       useCompression: true,
+      offline: false,
       ...config,
    };
    
    const expressApp = createExpressApp(mergedConfig);
 
-   if (mergedConfig.localPort) {
-      const port = mergedConfig.localPort;
-      expressApp.listen(`${port}`, () => console.log(`Listening on ${port}!`));
-   }
-
    const router = express.Router();
-   router.use(mergedConfig.routerPath, expressApp);
+   router.use(mergedConfig.routerPath || '', expressApp);
    const tscRouterHack = router as any;
 
    // wrap in cors if cors enabled
@@ -44,9 +43,10 @@ export let trigger = (config?: ApiConfig): Trigger => {
             tscRouterHack(req, res);
          });
       });
-   } else {
+   }
+    else {
       return functions.https.onRequest(tscRouterHack);
    }
 };
 
-export let app = createBareExpressApp;
+export const app = createBareExpressApp;

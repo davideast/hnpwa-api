@@ -4,3 +4,4 @@ public
 dist
 npm-debug.log
 database.rules.json
+.DS_Store

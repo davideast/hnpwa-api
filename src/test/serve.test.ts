@@ -1,7 +1,7 @@
-import * as hnapi from '../';
+import * as cli from '../cli';
 
-const app = hnapi.trigger({ 
-   localPort: 3002,
-   useCors: true,
-   cdnCacheExpiry: 900
+cli.serve({
+  port: 3002,
+  offline: false,
+  routerPath: ''
 });

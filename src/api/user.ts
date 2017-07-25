@@ -1,13 +1,6 @@
 import * as firebase from 'firebase';
 import * as moment from 'moment';
-
-export interface User {
-   about: string;
-   created_time: number;
-   created: string;
-   id: number;
-   karma: number;  
-}
+import { User } from './';
 
 /**
  * Get a user by their id and transform into a UI friendly JSON object.

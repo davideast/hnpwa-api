@@ -74,6 +74,14 @@ export interface Item {
   comments_count: number;
 }
 
+export interface User {
+   about?: string;
+   created_time: number;
+   created: string;
+   id: string;
+   karma: number;  
+}
+
 /**
  * Represents a tree of an item and its comments.
  */
