@@ -18,8 +18,10 @@ exports.api = hnapi.trigger({
    useCompression: true, // defaults to true
    browserCacheExpiry: 300, // in seconds (5 min is the default)
    cdnCacheExpiry: 600, // in seconds (10 min is the default)
-   firebaseAppName: 'hnpwa-api', // defaults to 'hnpwa-api'
-   localPort: 3002 // serves locally when passed, remove for production
+   staleWhileRevalidate: 120, // Allow CDN to serve stale data 120 seconds after cdnCacheExpiry
+   firebaseAppName: 'hnpwa-api', // defaults to hnpwa-api
+   offline: false, // Serves offline data if data is downloaded (See Global Module guide)
+   routerPath: 'api', // provide a serving path ex: mysite.com/api/news.json
 });
 ```
 
@@ -63,8 +65,10 @@ exports.api = hnapi.trigger({
    useCompression: true, // defaults to true
    browserCacheExpiry: 300, // in seconds (5 min is the default)
    cdnCacheExpiry: 600, // in seconds (10 min is the default)
+   staleWhileRevalidate: 120, // Allow CDN to serve stale data 120 seconds after cdnCacheExpiry
    firebaseAppName: 'hnpwa-api', // defaults to hnpwa-api
-   localPort: 3002 // serves locally when passed, remove for production
+   offline: false, // Serves offline data if data is downloaded (See Global Module guide)
+   routerPath: 'api', // provide a serving path ex: mysite.com/api/news.json
 });
 ```
 
@@ -94,6 +98,21 @@ firebase deploy
 
 That's all there is to it. Feel free to file an issue if you find a bug.
 
+## Global Module use
+The hnpwa-api module can either be downloaded as a global module or used from the 
+`node_modules/.bin/hnpwa-api` directory.
+
+### Serving offline
+The global module provides the ability to save data locally for offline serving. If 
+you're developing on a bus, airplane, or someother place without a connection you'll
+need this. 
+
+```bash
+# 1) Save to node_modules/hnpwa-api/offline (~10mb)
+node_modules/.bin/hnpwa-api --save
+# 2) Now serve offline
+node_modules/.bin/hnpwa-api --serve --offline
+```
 
 ## Non-Firebase setup
 Not using Cloud Functions or Firebase Hosting as your backend? No problem. This library still has you covered.
@@ -110,7 +129,7 @@ This returns an express app instance with the expected HN API endpoints. No midd
 ### Why do I need a Firebase App Name if not using Firebase Hosting?
 You may not use Firebase as your backed, but Hacker News does. The base HN API is backed by the Firebase Database. This library uses the Firebase Node SDK to retrieve data and coalesce it into a single UI friendly response.
 
-### Local Setup
+### Contribute!?
 ```bash
 git clone https://github.com/davideast/hnpwa-api/
 npm i
