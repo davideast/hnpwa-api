@@ -30,6 +30,7 @@ export const apiMap: { [key: string]: ApiString } = {
 
 export interface Api {
   [key: string]: any;
+  index(): { name: string };
   news(options: ApiOptions): Promise<Story[]>;
   newest(options: ApiOptions): Promise<Story[]>;
   ask(options: ApiOptions): Promise<Story[]>;
@@ -57,6 +58,11 @@ function storyFactory(key: ApiString, app: firebase.app.App) {
  */
 const api: ApiCreator = (app: firebase.app.App) => {
   return {
+    index(): { name: string } {
+      return {
+        name: 'Welcome to the HNPWA API'
+      };
+    },
     news(options: ApiOptions): Promise<Story[]> {
       return storyFactory(apiMap.NEWS, app)(options);
     },

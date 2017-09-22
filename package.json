@@ -1,6 +1,6 @@
 {
   "name": "hnpwa-api",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "description": "Deploy a Hacker News API on your own Firebase Hosting domain.",
   "main": "index.js",
   "bin" : { "hnpwa-api" : "./cli.js" },

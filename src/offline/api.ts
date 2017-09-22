@@ -17,6 +17,7 @@ const pageStories = (topic: string, options: ApiOptions): Story[] => {
 
 const offlineApi = (app: any) => {
   return {
+    index() { return { name: 'Welcome to the HNPWA API' }; },
     async news(options: ApiOptions) {
       return pageStories('news', options);
     },

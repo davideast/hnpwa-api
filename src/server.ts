@@ -39,6 +39,12 @@ function withinBounds(page: string, maxBounds = 10) {
   return Math.min(maxBounds, Math.max(1, parseInt(page, 10) || 1));
 }
 
+export function getIndex(hnapi: Api) {
+  return (req: express.Request, res: express.Response) => {
+    res.jsonp(hnapi.index());
+  };
+}
+
 /**
  * Creates an express route handler based on a Firebase App instance.
  * Get a list of "stories" based on the parameters provided. This API maps to the
@@ -139,6 +145,7 @@ export function configureExpressRoutes(expressApp: express.Application, config: 
   // Create API instance from firebaseApp
   let hnapi = getApi(config, firebaseApp);
 
+  expressApp.get('/', getIndex(hnapi));
   expressApp.get(routes.NEWS_AND_STUFF, getNewsAndStuff(hnapi));
   expressApp.get(routes.ITEM, getItemAndComments(hnapi));
   expressApp.get(routes.USER, getUserInfo(hnapi));
