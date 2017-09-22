@@ -144,12 +144,16 @@ export function configureExpressRoutes(expressApp: express.Application, config: 
   const firebaseApp = initializeApp(config);
   // Create API instance from firebaseApp
   let hnapi = getApi(config, firebaseApp);
-
+  
   expressApp.get('/', getIndex(hnapi));
   expressApp.get(routes.NEWS_AND_STUFF, getNewsAndStuff(hnapi));
   expressApp.get(routes.ITEM, getItemAndComments(hnapi));
   expressApp.get(routes.USER, getUserInfo(hnapi));
   expressApp.get('/favicon.ico', (req, res) => res.status(204).end());
+  expressApp.get('/_start', (req, res) => {
+    res.set('Cache-Control', 'private');
+    res.send(true);
+  });
 
   return expressApp;
 }
