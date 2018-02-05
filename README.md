@@ -1,4 +1,6 @@
-# HNPWA API
+<div align="center">
+  <h1>HNPWA API</h1>
+</div>
 
 <p align="center">
   <img width="600" height="300" src="https://raw.githubusercontent.com/davideast/hnpwa-api/master/assets/rocket-orange.png">
