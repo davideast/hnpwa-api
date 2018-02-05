@@ -3,7 +3,7 @@
     "public": "public",
     "rewrites": [{
       "source": "**",
-      "function": "api"
+      "function": "api0"
     }]
   }
 }

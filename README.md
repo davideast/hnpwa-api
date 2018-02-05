@@ -1,5 +1,9 @@
 # HNPWA API
 
+<p align="center">
+  <img width="600" height="300" src="https://raw.githubusercontent.com/davideast/hnpwa-api/master/assets/rocket-orange.png">
+</a>
+
 Deploy a CDN cached Hacker News API to your own Firebase Hosting Domain. All in two lines of code 😎
 
 **Heavily** inspired/guided by [cheeaun's](https://github.com/cheeaun) [node-hnapi](https://github.com/cheeaun/node-hnapi).

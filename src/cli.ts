@@ -27,6 +27,7 @@ export const saveOfflineApi = () => {
   buildFiles(hnapi);
 };
 
+// TODO(davideast): Use a CLI tool and maybe some chalk
 if(argv.serve) {
   serve({
     port: argv.port || 3002,
