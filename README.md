@@ -130,8 +130,8 @@ expressApp.listen(3000, () => console.log('Listening all on my own!'));
 
 This returns an express app instance with the expected HN API endpoints. No middleware is attached unlike the `trigger(config)` method. 
 
-### Why do I need a Firebase App Name if not using Firebase Hosting?
-You may not use Firebase as your backed, but Hacker News does. The base HN API is backed by the Firebase Database. This library uses the Firebase Node SDK to retrieve data and coalesce it into a single UI friendly response.
+### Why do I need a Firebase App Name if I'm not using Firebase Hosting?
+You may not use Firebase as your backend, but Hacker News does. The base HN API is backed by the Firebase Database. This library uses the Firebase Node SDK to retrieve data and coalesce it into a single UI friendly response.
 
 ### Contribute!?
 ```bash
