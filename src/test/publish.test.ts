@@ -1,14 +1,12 @@
-import { publishServer } from '../publish/server';
+import { publisher } from '../publish';
 
-const server = publishServer({ 
-  port: 3003, 
+const runner = publisher({ 
   interval: '* * * * *', 
   dest: 'public/v0', 
   cwd: process.cwd()
+}, () => {
+  console.log('Done writing...')
 });
 
-const stop = server.start();
+runner.start();
 
-server.afterWrite(() => {
-  console.log('Writing...');
-});

@@ -11,7 +11,7 @@ import {
   FIREBASE_APP_NAME } from './server';
 import { buildFiles } from './offline/build';
 
-export * from './publish/server';
+export * from './publish';
 
 export type Trigger = functions.TriggerAnnotated & ((req: Express.Request, resp: Express.Response) => void);
 
