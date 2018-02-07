@@ -1,24 +1,33 @@
 import * as fs from 'fs';
-import {Api, ApiOptions, Story, MAX_PAGES} from '../api';
+import { Api, ApiOptions, Story, MAX_PAGES } from '../api';
+
+export interface GetStoriesOptions {
+  hnapi: Api;
+  topic: string;
+  opts: ApiOptions;
+  max: number;
+  acc?: Story[];
+}
 
 /**
- * Retrieve all stories across all pages into a single array.
- * @param hnapi 
- * @param topic 
- * @param opts 
- * @param max 
- * @param acc 
+ * Retrieve all stories across all pages into a single array. A callback
+ * is provided for each recursive call.
  */
-async function getStories(hnapi: Api, topic: string, opts: ApiOptions, max: number, acc: Story[] = []): Promise<Story[]> {
+export async function getStories(
+  { hnapi, topic, opts, max, acc = [] }: GetStoriesOptions,
+  onStories?: (stories: Story[], sum: Story[], page: number) => void): Promise<Story[]> {
   const news = await hnapi[topic](opts);
   const sum = acc.concat(news);
   const nextPage = opts.page + 1;
+  if(onStories !== undefined) {
+    onStories(news, sum, opts.page);
+  }
   if(opts.page >= max) {
     return sum;
   }
   opts = { page: nextPage };
 
-  return getStories(hnapi, topic, opts, max, sum);
+  return getStories({ hnapi, topic, opts, max, acc: sum }, onStories);
 }
 
 /**
@@ -27,13 +36,13 @@ async function getStories(hnapi: Api, topic: string, opts: ApiOptions, max: numb
  */
 export async function buildFiles(hnapi: Api) {
   let promiseHash: { [key: string]: Promise<Story[]> } = {};
-  Object.keys(MAX_PAGES).forEach(key => {
-    if(typeof hnapi[key] !== 'function') {
-      promiseHash[key] = Promise.resolve([]);
+  Object.keys(MAX_PAGES).forEach(topic => {
+    if(typeof hnapi[topic] !== 'function') {
+      promiseHash[topic] = Promise.resolve([]);
     } else {
       const opts = { page: 1 };
-      const maxPage = MAX_PAGES[key];
-      promiseHash[key] = getStories(hnapi, key, opts, maxPage);
+      const max = MAX_PAGES[topic];
+      promiseHash[topic] = getStories({ hnapi, topic, opts, max });
     }
   });
 
