@@ -3,6 +3,7 @@ node_modules
 public
 dist
 npm-debug.log
+yarn-error.log
 database.rules.json
 .DS_Store
 *.tgz

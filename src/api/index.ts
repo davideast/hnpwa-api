@@ -36,7 +36,7 @@ export interface Api {
   ask(options: ApiOptions): Promise<Story[]>;
   show(options: ApiOptions): Promise<Story[]>;
   jobs(options: ApiOptions): Promise<Story[]>;
-  item(id: number): Promise<Item>;
+  item(id: number): Promise<Item | null>;
   user(id: number): Promise<User | null>;
 }
 
@@ -82,8 +82,14 @@ const api: ApiCreator = (app: firebase.app.App) => {
       return getUser(id, app);
     },
     async item(id: number) {
+      console.log('item call', id);
       const itemsWithComments = await getItemAndComments(id, app);
-      return itemMap(itemsWithComments!);
+      if(itemsWithComments === null || itemsWithComments === undefined) {
+        console.log(itemsWithComments);
+        console.log('null item');
+        return null;
+      }
+      return itemMap(itemsWithComments);
     },
   }
 };

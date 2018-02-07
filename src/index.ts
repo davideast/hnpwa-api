@@ -3,8 +3,15 @@ import * as cors from 'cors';
 import * as express from 'express';
 
 import api from './api';
-import { createExpressApp, ApiConfig, createBareExpressApp, initializeApp, FIREBASE_APP_NAME } from './server';
+import { 
+  createExpressApp, 
+  ApiConfig, 
+  createBareExpressApp, 
+  initializeApp, 
+  FIREBASE_APP_NAME } from './server';
 import { buildFiles } from './offline/build';
+
+export * from './publish';
 
 export type Trigger = functions.TriggerAnnotated & ((req: Express.Request, resp: Express.Response) => void);
 
@@ -50,3 +57,5 @@ export const trigger = (config?: ApiConfig): Trigger => {
 };
 
 export const app = createBareExpressApp;
+
+export * from './api/interfaces';

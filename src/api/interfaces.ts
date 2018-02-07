@@ -209,16 +209,18 @@ export function itemMap(tree: HackerNewsItemTree) {
  * @param level 
  */
 function recurseCommentTree(tree: HackerNewsItemTree, level = 0) {
-  let items = tree.comments.map(comment => {
-    let mappedItem = itemTransform(comment!, level);
-    if(comment!.comments) {
-      mappedItem.comments = recurseCommentTree(comment!, level + 1);
+  let items: Item[] = []
+  tree.comments.forEach(comment => {
+    if(comment === null) { return; }
+    let mappedItem = itemTransform(comment, level);
+    if(comment.comments) {
+      mappedItem.comments = recurseCommentTree(comment, level + 1).filter(c => c !== null);
       mappedItem.comments_count = mappedItem.comments.length;
     }
     // gather comment counts at this level
     mappedItem.comments_count += mappedItem.comments
       .map(i => i.comments_count).reduce((acc, i) => acc += i, 0);
-    return mappedItem;
+    items = [...items, mappedItem];
   });
   return items;
 }
