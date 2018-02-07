@@ -82,11 +82,8 @@ const api: ApiCreator = (app: firebase.app.App) => {
       return getUser(id, app);
     },
     async item(id: number) {
-      console.log('item call', id);
       const itemsWithComments = await getItemAndComments(id, app);
       if(itemsWithComments === null || itemsWithComments === undefined) {
-        console.log(itemsWithComments);
-        console.log('null item');
         return null;
       }
       return itemMap(itemsWithComments);

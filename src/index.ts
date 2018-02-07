@@ -9,9 +9,8 @@ import {
   createBareExpressApp, 
   initializeApp, 
   FIREBASE_APP_NAME } from './server';
-import { buildFiles } from './offline/build';
 
-export * from './publish';
+export { publisher } from './publish';
 
 export type Trigger = functions.TriggerAnnotated & ((req: Express.Request, resp: Express.Response) => void);
 
@@ -58,4 +57,4 @@ export const trigger = (config?: ApiConfig): Trigger => {
 
 export const app = createBareExpressApp;
 
-export * from './api/interfaces';
+export { HackerNewsItem, HackerNewsItemTree, Story } from './api/interfaces';

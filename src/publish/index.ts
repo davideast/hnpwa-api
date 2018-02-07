@@ -116,7 +116,6 @@ async function writeItems(stories: Story[], hnapi: Api, rootPath: string) {
         if(item === null) {
           return;
         }
-        console.log(item.id);
         const itemPath = path.resolve(rootPath, 'item', `${item.id.toString()}.json`);
         fs.writeFileSync(itemPath, JSON.stringify(item), 'utf8');
         console.log(`Wrote ${itemPath}.`)
