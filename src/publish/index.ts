@@ -12,6 +12,7 @@ export interface PublishOptions {
   interval: string | Date;
   dest: string;
   cwd: string;
+  log?: Function;
 }
 
 /**
@@ -21,9 +22,10 @@ export interface PublishOptions {
  * @param afterWrite 
  */
 export function publisher(opts: PublishOptions, afterWrite: () => void) {
-  const { interval, dest, cwd } = opts;
-  const rootPath = createFolderStructure(dest, cwd);
-  const job = new CronJob(interval, createPublishTask(rootPath, afterWrite));
+  let { interval, dest, cwd, log } = opts;
+  // If the user does not provide a log function, use a noop fn
+  if(typeof log !== 'function') { log = () => {} };
+  const job = new CronJob(interval, createPublishTask(dest, cwd, afterWrite, log));
   return {
     _job: job,
     start: () => job.start(),
@@ -44,9 +46,12 @@ export function publisher(opts: PublishOptions, afterWrite: () => void) {
  * @param root 
  * @param cwd 
  */
-export function createFolderStructure(root: string, cwd: string) {
+export function createFolderStructure(root: string, cwd: string, log: Function) {
   const rootPath = path.resolve(cwd, root);
   const itemPath = path.resolve(rootPath, 'item');
+  // Delete existing files first for a fresh deploy
+  log('Deleting current data.');
+  fs.removeSync(rootPath);
   fs.mkdirpSync(rootPath);
   Object.keys(MAX_PAGES).forEach(topic => {
     const topicPath = path.resolve(rootPath, topic);
@@ -62,14 +67,14 @@ export function createFolderStructure(root: string, cwd: string) {
  * @param rootPath 
  * @param afterWrite 
  */
-function createPublishTask(rootPath: string, afterWrite: Function): () => void {
+function createPublishTask(dest: string, cwd: string, afterWrite: Function, log: Function): () => void {
   return async () => {
-    const opts = { page: 1 };
+    const rootPath = createFolderStructure(dest, cwd, log);
     const firebaseApp = initializeApp({ firebaseAppName: `${Date.now()}` });
     const hnapi = api(firebaseApp);
-    const promiseHash = writeTopics(hnapi, rootPath);
+    const promiseHash = writeTopics(hnapi, rootPath, log);
     const stories = await promiseHash.news;
-    await writeItems(stories, hnapi, rootPath);
+    await writeItems(stories, hnapi, rootPath, log);
     afterWrite();
   };
 }
@@ -79,7 +84,7 @@ function createPublishTask(rootPath: string, afterWrite: Function): () => void {
  * @param hnapi 
  * @param rootPath 
  */
-function writeTopics(hnapi: Api, rootPath: string) {
+function writeTopics(hnapi: Api, rootPath: string, log: Function) {
   let promiseHash: { [key: string]: Promise<Story[]> } = {};
   Object.keys(MAX_PAGES).forEach(topic => {
     if (typeof hnapi[topic] !== 'function') {
@@ -92,7 +97,7 @@ function writeTopics(hnapi: Api, rootPath: string) {
         const topicPath = path.resolve(rootPath, topic, `${page.toString()}.json`);
         if (stories.length > 0) {
           fs.writeFileSync(topicPath, JSON.stringify(stories), 'utf8');
-          console.log(`Wrote ${topicPath}.`);
+          log(`Wrote ${topicPath}.`);
         }
       });
     }
@@ -106,11 +111,10 @@ function writeTopics(hnapi: Api, rootPath: string) {
  * @param hnapi 
  * @param rootPath 
  */
-async function writeItems(stories: Story[], hnapi: Api, rootPath: string) {
+async function writeItems(stories: Story[], hnapi: Api, rootPath: string, log: Function) {
   try {
     const itemPromises = stories.map(story => hnapi.item(story.id));
     const allItems = await Promise.all(itemPromises);
-    console.log(allItems);
     return new Promise((resolve, reject) => {
       allItems.forEach(item => {
         if(item === null) {
@@ -118,12 +122,12 @@ async function writeItems(stories: Story[], hnapi: Api, rootPath: string) {
         }
         const itemPath = path.resolve(rootPath, 'item', `${item.id.toString()}.json`);
         fs.writeFileSync(itemPath, JSON.stringify(item), 'utf8');
-        console.log(`Wrote ${itemPath}.`)
+        log(`Wrote ${itemPath}.`)
       });
       resolve();
     });
   } catch(e) {
-    console.log(e);
+    log(e);
     throw e;
   }
 }

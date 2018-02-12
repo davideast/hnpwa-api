@@ -12,7 +12,7 @@
     "watch": "node_modules/.bin/tsc -w",
     "serve": "npm run build && node_modules/.bin/nodemon ./dist/test/serve.test.js",
     "pack": "npm run build && npm pack dist",
-    "pub:server": "npm run build && nodemon ./dist/test/publish.test.js"
+    "pub:server": "npm run build && node ./dist/test/publish.test.js"
   },
   "dependencies": {
     "@types/compression": "0.0.33",
