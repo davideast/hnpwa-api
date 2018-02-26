@@ -15,15 +15,6 @@ export interface PublishOptions {
   log?: Function;
 }
 
-const json404 = (topic: string) => {
-  const page = MAX_PAGES[topic];
-  return {
-    "status": "404",
-    "max": page,
-    "message": `Page not found. Maximum page number is ${page}`
-  };
-}
-
 /**
  * Write files to disk from the HNPWA API at a set interval. Fire the
  * afterWrite callback when all files are written.
@@ -63,13 +54,22 @@ export function createFolderStructure(root: string, cwd: string, log: Function) 
   fs.removeSync(rootPath);
   fs.mkdirpSync(rootPath);
   Object.keys(MAX_PAGES).forEach(topic => {
+    // Dont need to create a root folder
+    if(topic === '/') { return; }
     const maxPlusOne = MAX_PAGES[topic] + 1;
+    const tenPagesLater = maxPlusOne + 10;
+    let count = maxPlusOne;
     const topicPath = path.resolve(rootPath, topic);
-    const path404 = path.resolve(topicPath, `${maxPlusOne}.json`);
     fs.mkdirpSync(topicPath);
     // Write a 404 json result for the next page outside of the
-    // MAX_PAGES result.
-    fs.writeFileSync(path404, json404(topic), 'utf8');
+    // MAX_PAGES result. Currently use 10 pages of blank arrays
+    // to be on the safe side. Outside of that extra 10 pages
+    // a 404 should be dynamically generated.
+    while(count < tenPagesLater) {
+      const path404 = path.resolve(topicPath, `${count}.json`);
+      fs.writeFileSync(path404, JSON.stringify([]), 'utf8');
+      count++;
+    }
   });
   fs.mkdirpSync(itemPath);
   return rootPath;

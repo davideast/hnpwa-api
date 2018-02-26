@@ -12,7 +12,7 @@ export interface ApiOptions {
 export const MAX_PAGES: { [key: string]: number } = {
   "news": 10,
   "jobs": 1,
-  "ask": 3,
+  "ask": 2,
   "show": 2,
   "/": 10
 };

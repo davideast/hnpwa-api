@@ -139,6 +139,6 @@ git clone https://github.com/davideast/hnpwa-api/
 npm i
 npm run build # single build of the project
 npm run watch # typescript (tsc) watcher
-npm run serve # local nodemon server
+npm run serve # local node debug server
 npm run pack # local tarball for test installations
 ```
