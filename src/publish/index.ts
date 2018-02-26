@@ -68,6 +68,7 @@ export function createFolderStructure(root: string, cwd: string, log: Function) 
     while(count < tenPagesLater) {
       const path404 = path.resolve(topicPath, `${count}.json`);
       fs.writeFileSync(path404, JSON.stringify([]), 'utf8');
+      log(`Wrote ${path404}.`);
       count++;
     }
   });

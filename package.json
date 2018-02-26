@@ -1,6 +1,6 @@
 {
   "name": "hnpwa-api",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Deploy a Hacker News API on your own domain.",
   "main": "index.js",
   "bin": {
