@@ -15,6 +15,15 @@ export interface PublishOptions {
   log?: Function;
 }
 
+const json404 = (topic: string) => {
+  const page = MAX_PAGES[topic];
+  return {
+    "status": "404",
+    "max": page,
+    "message": `Page not found. Maximum page number is ${page}`
+  };
+}
+
 /**
  * Write files to disk from the HNPWA API at a set interval. Fire the
  * afterWrite callback when all files are written.
@@ -54,8 +63,13 @@ export function createFolderStructure(root: string, cwd: string, log: Function) 
   fs.removeSync(rootPath);
   fs.mkdirpSync(rootPath);
   Object.keys(MAX_PAGES).forEach(topic => {
+    const maxPlusOne = MAX_PAGES[topic] + 1;
     const topicPath = path.resolve(rootPath, topic);
+    const path404 = path.resolve(topicPath, `${maxPlusOne}.json`);
     fs.mkdirpSync(topicPath);
+    // Write a 404 json result for the next page outside of the
+    // MAX_PAGES result.
+    fs.writeFileSync(path404, json404(topic), 'utf8');
   });
   fs.mkdirpSync(itemPath);
   return rootPath;
