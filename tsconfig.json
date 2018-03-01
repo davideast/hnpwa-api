@@ -13,6 +13,7 @@
         "src/index.ts",
         "src/test/serve.test.ts",
         "src/test/publish.test.ts",
+        "src/test/offline.test.ts",
         "src/cli.ts"
     ]
 }

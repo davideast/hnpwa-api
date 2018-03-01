@@ -1,6 +1,6 @@
 {
   "name": "hnpwa-api",
-  "version": "0.1.5",
+  "version": "0.1.7",
   "description": "Deploy a Hacker News API on your own domain.",
   "main": "index.js",
   "bin": {
@@ -12,7 +12,8 @@
     "watch": "node_modules/.bin/tsc -w",
     "serve": "npm run build && node --debug-brk --inspect ./dist/test/serve.test.js",
     "pack": "npm run build && npm pack dist",
-    "pub:server": "npm run build && node ./dist/test/publish.test.js"
+    "pub:server": "npm run build && node ./dist/test/publish.test.js",
+    "offline:test": "npm run build && node ./dist/test/offline.test.js"
   },
   "dependencies": {
     "@types/compression": "0.0.33",

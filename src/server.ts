@@ -169,6 +169,8 @@ export function createExpressApp(config: ApiConfig) {
   if (config.useCompression) { expressApp.use(compression()); }
   expressApp.use(cacheControl(config));
 
+  if (config.offline) { expressApp.use(express.static(`${__dirname}/offline/static`)); }
+
   // apply routes
   expressApp = configureExpressRoutes(expressApp, config);
 
