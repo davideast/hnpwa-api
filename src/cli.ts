@@ -36,10 +36,11 @@ export const serve = (opts: AppOptions): express.Express => {
   return hostApp;
 }
 
-export const saveOfflineApi = () => {
+export const saveOfflineApi = async () => {
   const app = initializeApp({ firebaseAppName: `${Date.now()}` });
   const hnapi = api(app);
-  buildFiles(hnapi);
+  await buildFiles(hnapi);
+  process.exit(0);
 };
 
 // TODO(davideast): Use a CLI tool and maybe some chalk
