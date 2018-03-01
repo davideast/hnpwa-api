@@ -14,6 +14,7 @@ export const MAX_PAGES: { [key: string]: number } = {
   "jobs": 1,
   "ask": 2,
   "show": 2,
+  "newest": 10,
   "/": 10
 };
 
