@@ -1,4 +1,4 @@
-import * as fs from 'fs';
+import * as fs from 'fs-extra';
 import { Api, ApiOptions, Story, MAX_PAGES } from '../api';
 
 export interface GetStoriesOptions {
@@ -35,31 +35,41 @@ export async function getStories(
  * @param hnapi 
  */
 export async function buildFiles(hnapi: Api) {
-  let promiseHash: { [key: string]: Promise<Story[]> } = {};
-  Object.keys(MAX_PAGES).forEach(topic => {
-    if(typeof hnapi[topic] !== 'function') {
-      promiseHash[topic] = Promise.resolve([]);
-    } else {
-      const opts = { page: 1 };
-      const max = MAX_PAGES[topic];
-      promiseHash[topic] = getStories({ hnapi, topic, opts, max });
-    }
-  });
-
-  Object.keys(promiseHash).forEach(async key => {
-    const stories = await promiseHash[key];
-    if(stories.length > 0) {
-      const json = JSON.stringify(stories);
-      fs.writeFileSync(`${__dirname}/${key}.json`, json, 'utf8');
-    }
-
-    if(key === 'news') {
-      const itemPromises = stories.map(story => hnapi.item(story.id));
-      const allItems = await Promise.all(itemPromises);
-      const itemsJson = JSON.stringify(allItems);
-      fs.writeFile(`${__dirname}/items.json`, itemsJson, 'utf8', () => {
-        process.exit(0);
+  return new Promise((resolve, reject) => {
+    try {
+      let promiseHash: { [key: string]: Promise<Story[]> } = {};
+      Object.keys(MAX_PAGES).forEach(topic => {
+        if(typeof hnapi[topic] !== 'function') {
+          promiseHash[topic] = Promise.resolve([]);
+        } else {
+          const opts = { page: 1 };
+          const max = MAX_PAGES[topic];
+          promiseHash[topic] = getStories({ hnapi, topic, opts, max }, (stories, sum, page) => {
+            const json = JSON.stringify(stories);
+            fs.mkdirpSync(`${__dirname}/static/${topic}/`);
+            fs.writeFileSync(`${__dirname}/static/${topic}/${page}.json`, json, 'utf8');
+          });
+        }
       });
+    
+      Object.keys(promiseHash).forEach(async key => {
+        const stories = await promiseHash[key];
+        if(stories.length > 0) {
+          const json = JSON.stringify(stories);
+          fs.writeFileSync(`${__dirname}/${key}.json`, json, 'utf8');
+        }
+    
+        if(key === 'news') {
+          const itemPromises = stories.map(story => hnapi.item(story.id));
+          const allItems = await Promise.all(itemPromises);
+          const itemsJson = JSON.stringify(allItems);
+          fs.writeFile(`${__dirname}/items.json`, itemsJson, 'utf8', () => {
+            resolve();
+          });
+        }
+      }); 
+    } catch (e) {
+      reject(e);
     }
   });
 }
