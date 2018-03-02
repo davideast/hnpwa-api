@@ -133,6 +133,29 @@ function cacheControl(config: ApiConfig) {
   };
 }
 
+
+function prettyPrint() {
+  return (req: express.Request, res: express.Response, next: Function) => {
+    const { print } = req.query;
+    if (typeof print === 'undefined') {
+      req.app.set('json spaces', 0);
+      next();
+      return;
+    }
+    req.app.set('json spaces', 2);
+    next();
+  };
+}
+
+function prettyIndex() {
+  return (req: express.Request, res: express.Response, next: Function) => {
+    if (req.path === '/') {
+      req.query.print = 'pretty'
+    }
+    next();
+  }
+}
+
 /**
  * Attaches express route handlers for the HNAPI given a Firebase App instance and
  * a user's config.
@@ -168,6 +191,8 @@ export function createExpressApp(config: ApiConfig) {
   // Configure middleware
   if (config.useCompression) { expressApp.use(compression()); }
   expressApp.use(cacheControl(config));
+  expressApp.use(prettyIndex());
+  expressApp.use(prettyPrint());
 
   if (config.offline) { expressApp.use(express.static(`${__dirname}/offline/static`)); }
 
