@@ -54,14 +54,47 @@ function storyFactory(key: ApiString, app: firebase.app.App) {
   return (options: ApiOptions) => stories(key, options, app);
 }
 
+function topicEndpointFactory(topic: string) {
+  return {
+    topic,
+    url: `https://api.hnpwa.com/v0/${topic}/1.json`,
+    maxPages: MAX_PAGES[topic]
+  };
+}
+
+function itemEndpointFactory() {
+  return {
+    topic: 'item',
+    url: `https://api.hnpwa.com/v0/items/1.json`,
+    maxPages: null
+  };
+}
+
+function userEndpointFactory() {
+  return {
+    topic: 'user',
+    url: `https://api.hnpwa.com/v0/users/davideast.json`, 
+    maxPages: null
+  };
+}
+
 /**
  * The aggregated API for interfacing with Hacker News.
  */
 const api: ApiCreator = (app: firebase.app.App) => {
   return {
-    index(): { name: string } {
+    index(): any {
       return {
-        name: 'Welcome to the HNPWA API'
+        name: 'Welcome to the HNPWA API',
+        endpoints: [
+          topicEndpointFactory('news'),
+          topicEndpointFactory('newest'),
+          topicEndpointFactory('ask'),
+          topicEndpointFactory('show'),
+          topicEndpointFactory('jobs'),
+          itemEndpointFactory(),
+          userEndpointFactory()
+        ]
       };
     },
     news(options: ApiOptions): Promise<Story[]> {
