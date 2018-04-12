@@ -18,7 +18,7 @@ export const MAX_PAGES: { [key: string]: number } = {
   "/": 10
 };
 
-// Constant Hash of API topics 
+// Constant Hash of API topics
 export const apiMap: { [key: string]: ApiString } = {
   NEWS: 'topstories',
   NEWEST: 'newstories',
@@ -44,11 +44,11 @@ export interface Api {
 export type ApiCreator = (app: firebase.app.App) => Api;
 
 /**
- * Helper method for generating a "story" feed. Top level keys like 
+ * Helper method for generating a "story" feed. Top level keys like
  * "topstories" and "newstories" return an array of child keys which require
- * subsequent fetching. 
- * @param key 
- * @param options 
+ * subsequent fetching.
+ * @param key
+ * @param options
  */
 function storyFactory(key: ApiString, app: firebase.app.App) {
   return (options: ApiOptions) => stories(key, options, app);
@@ -65,7 +65,7 @@ function topicEndpointFactory(topic: string) {
 function itemEndpointFactory() {
   return {
     topic: 'item',
-    url: `https://api.hnpwa.com/v0/items/1.json`,
+    url: `https://api.hnpwa.com/v0/item/1.json`,
     maxPages: null
   };
 }
@@ -73,7 +73,7 @@ function itemEndpointFactory() {
 function userEndpointFactory() {
   return {
     topic: 'user',
-    url: `https://api.hnpwa.com/v0/users/davideast.json`, 
+    url: `https://api.hnpwa.com/v0/users/davideast.json`,
     maxPages: null
   };
 }
