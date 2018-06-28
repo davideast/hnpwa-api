@@ -3,12 +3,7 @@
 import * as yargs from 'yargs';
 import * as express from 'express';
 import api from './api';
-import { 
-  createExpressApp, 
-  ApiConfig, 
-  createBareExpressApp, 
-  initializeApp, 
-  FIREBASE_APP_NAME } from './server';
+import { createExpressApp, initializeApp } from './server';
 import { buildFiles } from './offline/build';
 
 const argv = yargs.argv;

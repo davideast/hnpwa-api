@@ -1,13 +1,10 @@
 import * as functions from 'firebase-functions';
 import * as cors from 'cors';
 import * as express from 'express';
-
-import api from './api';
 import { 
   createExpressApp, 
   ApiConfig, 
-  createBareExpressApp, 
-  initializeApp, 
+  createBareExpressApp,
   FIREBASE_APP_NAME } from './server';
 
 export { publisher } from './publish';

@@ -1,5 +1,4 @@
 import { buildFiles } from '../offline/build';
-import offlineApi from '../offline/api';
 import api from '../api';
 import { initializeApp, createExpressApp } from '../server';
 

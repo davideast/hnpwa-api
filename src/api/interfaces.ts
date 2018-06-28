@@ -155,7 +155,7 @@ function parseUrl(item: HackerNewsItem, story: any) {
  * @param tree 
  */
 export function itemTransform(tree: HackerNewsItemTree, level = 0) {
-   const { item, comments } =  tree;
+   const { item } =  tree;
    let mappedItem: Item = {
       id: item.id,
       title: item.title,

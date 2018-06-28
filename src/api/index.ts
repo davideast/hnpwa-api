@@ -1,5 +1,5 @@
 export * from './interfaces';
-import { Story, itemMap, HackerNewsItemTree, HackerNewsItem, Item, User } from './interfaces';
+import { Story, itemMap, Item, User } from './interfaces';
 import { stories } from './stories';
 import { getItemAndComments } from './item';
 import { getUser } from './user';

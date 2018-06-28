@@ -1,5 +1,5 @@
-import * as functions from 'firebase-functions';
 import * as firebase from 'firebase';
+import 'firebase/database';
 import * as express from 'express';
 import * as compression from 'compression';
 import { Api } from './api';

@@ -1,4 +1,4 @@
-import { Api, ApiCreator, ApiOptions, Story, Item, User } from '../api';
+import { ApiOptions, Story, Item, User } from '../api';
 
 const TEST_USER: User = { about: '', created_time: 1400006274, created: "3 years ago", id: "davideast", karma: 22 };
 
