@@ -8,7 +8,7 @@
   "dependencies": {
     "firebase-admin": "^9.00.0",
     "firebase-functions": "^3.0.0",
-    "hnpwa-api": "file:../hnpwa-api-0.2.3-TEST.tgz"
+    "hnpwa-api": "^0.2.3"
   },
   "private": true
 }

@@ -2,9 +2,8 @@ functions/node_modules
 node_modules
 public
 dist
-npm-debug.log
-yarn-error.log
 database.rules.json
 .DS_Store
 *.tgz
-ui-debug.log
+*.log
+.firebase
