@@ -1,9 +1,26 @@
 {
   "hosting": {
     "public": "public",
-    "rewrites": [{
-      "source": "**",
-      "function": "api0"
-    }]
+    "rewrites": [
+      {
+        "source": "/v0**",
+        "function": "api0"
+      },
+      {
+        "source": "/v0/**",
+        "function": "api0"
+      }
+    ]
+  },
+  "emulators": {
+    "functions": {
+      "port": 5001
+    },
+    "hosting": {
+      "port": 5000
+    },
+    "ui": {
+      "enabled": true
+    }
   }
 }

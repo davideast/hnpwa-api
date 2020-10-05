@@ -10,4 +10,3 @@ const runner = publisher({
 });
 
 runner.start();
-

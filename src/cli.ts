@@ -6,7 +6,17 @@ import api from './api';
 import { createExpressApp, initializeApp } from './server';
 import { buildFiles } from './offline/build';
 
-const argv = yargs.argv;
+interface FlagInputs {
+  save: boolean;
+  serve: boolean;
+  port: number;
+  offline: boolean;
+  routerPath: string;
+  v: boolean;
+  version: boolean;
+}
+
+const argv: FlagInputs = yargs.argv as any;
 
 export interface AppOptions { port: number, offline: boolean, routerPath: string };
 

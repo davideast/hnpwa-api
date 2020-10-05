@@ -6,9 +6,9 @@
     "serve": "firebase serve --only functions,hosting"
   },
   "dependencies": {
-    "firebase-admin": "^5.12.1",
-    "firebase-functions": "^1.1.0",
-    "hnpwa-api": "^0.2.0"
+    "firebase-admin": "^9.00.0",
+    "firebase-functions": "^3.0.0",
+    "hnpwa-api": "file:../hnpwa-api-0.2.3-TEST.tgz"
   },
   "private": true
 }

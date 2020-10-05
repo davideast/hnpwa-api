@@ -29,6 +29,10 @@ export const trigger = (config?: ApiConfig): Trigger => {
       firebaseAppName: FIREBASE_APP_NAME,
       useCompression: true,
       offline: false,
+      runWith: {
+         memory: '256MB',
+         timeoutSeconds: 300
+      },
       ...config,
    };
    
@@ -41,14 +45,21 @@ export const trigger = (config?: ApiConfig): Trigger => {
    // wrap in cors if cors enabled
    if (mergedConfig.useCors) {
       const corsServer = cors({ origin: true });
-      return functions.https.onRequest((req, res) => {
-         corsServer(req, res, () => {
-            tscRouterHack(req, res);
+      // Marked as any because of Type mismatch between CORS package and
+      // Functions
+      return functions
+         .runWith(mergedConfig.runWith!)
+         .https
+         .onRequest((req: any, res: any) => {
+            corsServer(req, res, () => {
+               tscRouterHack(req, res);
+            });
          });
-      });
    }
     else {
-      return functions.https.onRequest(tscRouterHack);
+      return functions
+         .runWith(mergedConfig.runWith!)
+         .https.onRequest(tscRouterHack);
    }
 };
 

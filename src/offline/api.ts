@@ -8,7 +8,7 @@ const getFile = (topic: string): Story[] | Item[] => {
 
 const pageStories = (topic: string, options: ApiOptions): Story[] => {
   const stories = getFile(topic);
-  const opts = { page: 1, ...options };
+  const opts = { ...options, page: 1 };
   const limit = 30;
   const startIndex = (opts.page - 1) * limit;
   const endIndex = startIndex + limit;

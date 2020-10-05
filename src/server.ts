@@ -1,6 +1,7 @@
 import * as firebase from 'firebase';
 import 'firebase/database';
 import * as express from 'express';
+import { Express }  from 'express';
 import * as compression from 'compression';
 import { Api } from './api';
 import api from './api';
@@ -17,6 +18,10 @@ export interface ApiConfig {
   staleWhileRevalidate?: number;
   firebaseAppName?: string;
   offline?: boolean;
+  runWith?: {
+    memory: '128MB' | '256MB' | '512MB' | '1GB' | '2GB'; 
+    timeoutSeconds: number;
+  }
 }
 
 // Hash of route matchers
@@ -40,7 +45,7 @@ function withinBounds(page: string, maxBounds = 10) {
 }
 
 export function getIndex(hnapi: Api) {
-  return (req: express.Request, res: express.Response) => {
+  return (req: any, res: any) => {
     res.jsonp(hnapi.index());
   };
 }
@@ -53,7 +58,7 @@ export function getIndex(hnapi: Api) {
  * @param firebaseApp
  */
 export function getNewsAndStuff(hnapi: Api) {
-  return async (req: express.Request, res: express.Response) => {
+  return async (req: any, res: any) => {
     // "news" | "ask" | "jobs" | "show" etc...
     const topic = req.params[0].replace('.json', '');
     const page = withinBounds(req.query.page);
@@ -69,7 +74,7 @@ export function getNewsAndStuff(hnapi: Api) {
  * @param firebaseApp
  */
 export function getItemAndComments(hnapi: Api) {
-  return async (req: express.Request, res: express.Response) => {
+  return async (req: any, res: any) => {
     const itemId = req.params[0];
     const item = await hnapi.item(itemId);
     res.jsonp(item);
@@ -83,7 +88,7 @@ export function getItemAndComments(hnapi: Api) {
  * @param firebaseApp
  */
 export function getUserInfo(hnapi: Api) {
-  return async (req: express.Request, res: express.Response) => {
+  return async (req: any, res: any) => {
     const userId = req.params[0];
     const user = await hnapi.user(userId);
     res.jsonp(user);
@@ -127,7 +132,7 @@ export function initializeApp(config: ApiConfig): firebase.app.App {
  */
 function cacheControl(config: ApiConfig) {
   const { cdnCacheExpiry, browserCacheExpiry, staleWhileRevalidate } = config;
-  return (req: express.Request, res: express.Response, next: Function) => {
+  return (req: any, res: any, next: Function) => {
     res.set('Cache-Control', `public, max-age=${browserCacheExpiry}, s-maxage=${cdnCacheExpiry}, stale-while-revalidate=${staleWhileRevalidate}`);
     next();
   };
@@ -135,7 +140,7 @@ function cacheControl(config: ApiConfig) {
 
 
 function prettyPrint() {
-  return (req: express.Request, res: express.Response, next: Function) => {
+  return (req: any, res: any, next: Function) => {
     const { print } = req.query;
     if (typeof print === 'undefined') {
       req.app.set('json spaces', 0);
@@ -148,7 +153,7 @@ function prettyPrint() {
 }
 
 function prettyIndex() {
-  return (req: express.Request, res: express.Response, next: Function) => {
+  return (req: any, res: any, next: Function) => {
     if (req.path === '/') {
       req.query.print = 'pretty'
     }
@@ -162,7 +167,7 @@ function prettyIndex() {
  * @param expressApp 
  * @param config 
  */
-export function configureExpressRoutes(expressApp: express.Application, config: ApiConfig) {
+export function configureExpressRoutes(expressApp: Express, config: ApiConfig) {
   // Init firebase app instance
   const firebaseApp = initializeApp(config);
   // Create API instance from firebaseApp
@@ -186,7 +191,7 @@ export function configureExpressRoutes(expressApp: express.Application, config: 
  * @param config 
  */
 export function createExpressApp(config: ApiConfig) {
-  let expressApp: express.Application = express();
+  let expressApp: Express = express();
 
   // Configure middleware
   if (config.useCompression) { expressApp.use(compression()); }
