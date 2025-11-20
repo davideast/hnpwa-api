@@ -28,6 +28,7 @@ export function publisher(opts: PublishOptions, afterWrite: () => void) {
     _job: job,
     start: () => job.start(),
     stop: () => job.stop(),
+    // @ts-ignore
     isRunning: () => job.running
   };
 }
@@ -137,7 +138,7 @@ async function writeItems(stories: Story[], hnapi: Api, rootPath: string, log: F
         fs.writeFileSync(itemPath, JSON.stringify(item), 'utf8');
         log(`Wrote ${itemPath}.`)
       });
-      resolve();
+      resolve(void 0);
     });
   } catch(e) {
     log(e);

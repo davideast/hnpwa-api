@@ -1,5 +1,5 @@
 import * as url from 'url';
-import * as moment from 'moment';
+import moment from 'moment';
 
 export interface HackerNewsItem {
   /** The item's unique id */
@@ -21,7 +21,7 @@ export interface HackerNewsItem {
   /** The pollopt's associated poll */
   poll: number;
   /** The ids of the item's comments, in ranked display order */
-  kids: number[];
+  kids?: number[];
   /** The URL of the story */
   url?: string;
   /** The story's score, or the votes for a pollopt */
@@ -29,7 +29,7 @@ export interface HackerNewsItem {
   /** The title of the story, poll or job */
   title: string;
   /** A list of related pollopts, in display order */
-  parts: number[];
+  parts?: number[];
   /** In the case of stories or polls, the total comment count */
   descendants: number;
 }
@@ -70,7 +70,7 @@ export interface Item {
   url?: string;
   domain?: string;
   comments: Item[];
-  level: number;
+  level?: number;
   comments_count: number;
 }
 
@@ -193,13 +193,13 @@ export function itemTransform(tree: HackerNewsItemTree, level = 0) {
 export function itemMap(tree: HackerNewsItemTree) {
   const root = itemTransform(tree);
   // root level is a story, not a comment thread
-  delete root.level;
-  root.comments = recurseCommentTree(tree, 0);
+  const { level, ...rootWithoutLevel } = root;
+  const rootWithComments = { ...rootWithoutLevel, comments: recurseCommentTree(tree, 0) };
   // gather comments count at root level
-  root.comments_count = root.comments.reduce((acc, i) => {
+  rootWithComments.comments_count = rootWithComments.comments.reduce((acc, i) => {
     return acc += i.comments_count;
-  }, 0) + root.comments.length;
-  return root;
+  }, 0) + rootWithComments.comments.length;
+  return rootWithComments;
 }
 
 /**

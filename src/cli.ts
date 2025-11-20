@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import * as yargs from 'yargs';
-import * as express from 'express';
+import express from 'express';
 import api from './api';
 import { createExpressApp, initializeApp } from './server';
 import { buildFiles } from './offline/build';
@@ -49,15 +49,15 @@ export const saveOfflineApi = async () => {
 };
 
 // TODO(davideast): Use a CLI tool and maybe some chalk
-if(argv.serve) {
+if(argv && argv.serve) {
   serve({
     port: argv.port || 3002,
     offline: argv.offline || false,
     routerPath: argv.routerPath || ''
   });
-} else if(argv.save) {
+} else if(argv && argv.save) {
   saveOfflineApi();
-} else if(argv.v || argv.version) {
+} else if(argv && (argv.v || argv.version)) {
   const pkg = require('./package.json');
   console.log(pkg.version);  
 } else {

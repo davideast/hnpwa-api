@@ -3,6 +3,8 @@ import { Story, itemMap, Item, User } from './interfaces';
 import { stories } from './stories';
 import { getItemAndComments } from './item';
 import { getUser } from './user';
+// @ts-ignore
+import firebase from 'firebase/compat/app';
 
 export type ApiFn = (options: {}) => Promise<Story[]>;
 export type ApiString = 'topstories' | 'newstories' | 'askstories' | 'showstories' | 'jobstories' | 'item' | 'user';

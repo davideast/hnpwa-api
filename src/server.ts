@@ -1,8 +1,9 @@
-import * as firebase from 'firebase';
-import 'firebase/database';
-import * as express from 'express';
+// @ts-ignore
+import firebase from 'firebase/compat/app';
+import 'firebase/compat/database';
+import express from 'express';
 import { Express }  from 'express';
-import * as compression from 'compression';
+import compression from 'compression';
 import { Api } from './api';
 import api from './api';
 import offlineApi from './offline/api';
@@ -160,6 +161,9 @@ function prettyIndex() {
     next();
   }
 }
+
+// Define RequestHandler type locally to match express usage
+type RequestHandler = (req: any, res: any, next: any) => void;
 
 /**
  * Attaches express route handlers for the HNAPI given a Firebase App instance and

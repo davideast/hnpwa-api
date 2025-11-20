@@ -1,5 +1,6 @@
-import * as firebase from 'firebase';
-import * as moment from 'moment';
+// @ts-ignore
+import firebase from 'firebase/compat/app';
+import moment from 'moment';
 import { User } from './';
 
 /**
