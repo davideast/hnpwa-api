@@ -8,6 +8,14 @@ import { Api } from './api';
 import api from './api';
 import offlineApi from './offline/api';
 
+// TODO [MCP-TASK]: Setup MCP Server Integration
+// Type: Setup
+// Context: Install dependencies and initialize McpServer.
+// Strategy:
+// 1. Run `npm install @modelcontextprotocol/sdk zod`.
+// 2. Create `src/mcp/server.ts` to export an `installMcpServer(expressApp, hnapi)` function.
+// 3. Import `installMcpServer` here.
+
 export const FIREBASE_APP_NAME = 'hnpwa-api';
 
 export interface ApiConfig {
@@ -58,6 +66,14 @@ export function getIndex(hnapi: Api) {
  * through the ?page query param.
  * @param firebaseApp
  */
+// TODO [MCP-TASK]: Create News Resources
+// Type: Resource
+// Complexity: Low
+// Context: Expose stories (news, ask, jobs, etc.) to LLMs.
+// Strategy:
+// 1. Create `src/mcp/resources/news.ts`.
+// 2. Register resources `hn://{topic}` where topic is 'news', 'newest', 'ask', 'show', 'jobs'.
+// 3. Use `hnapi[topic]({ page })` to fetch data.
 export function getNewsAndStuff(hnapi: Api) {
   return async (req: any, res: any) => {
     // "news" | "ask" | "jobs" | "show" etc...
@@ -74,6 +90,14 @@ export function getNewsAndStuff(hnapi: Api) {
  * the user.
  * @param firebaseApp
  */
+// TODO [MCP-TASK]: Create Item Resource
+// Type: Resource
+// Complexity: Low
+// Context: Expose individual items and comments.
+// Strategy:
+// 1. Create `src/mcp/resources/item.ts`.
+// 2. Register resource `hn://item/{id}`.
+// 3. Use `hnapi.item(id)` to fetch data.
 export function getItemAndComments(hnapi: Api) {
   return async (req: any, res: any) => {
     const itemId = req.params[0];
@@ -88,6 +112,14 @@ export function getItemAndComments(hnapi: Api) {
  * the user.
  * @param firebaseApp
  */
+// TODO [MCP-TASK]: Create User Resource
+// Type: Resource
+// Complexity: Low
+// Context: Expose user profiles.
+// Strategy:
+// 1. Create `src/mcp/resources/user.ts`.
+// 2. Register resource `hn://user/{id}`.
+// 3. Use `hnapi.user(id)` to fetch data.
 export function getUserInfo(hnapi: Api) {
   return async (req: any, res: any) => {
     const userId = req.params[0];
@@ -177,6 +209,11 @@ export function configureExpressRoutes(expressApp: Express, config: ApiConfig) {
   // Create API instance from firebaseApp
   let hnapi = getApi(config, firebaseApp);
   
+  // TODO [MCP-TASK]: Mount MCP Server
+  // Type: Setup
+  // Context: Attach the MCP server transport to the Express app.
+  // Strategy: Call `installMcpServer(expressApp, hnapi)` here.
+
   expressApp.get('/', getIndex(hnapi));
   expressApp.get(routes.NEWS_AND_STUFF, getNewsAndStuff(hnapi));
   expressApp.get(routes.ITEM, getItemAndComments(hnapi));
