@@ -5,6 +5,7 @@ import express from 'express';
 import api from './api';
 import { createExpressApp, initializeApp } from './server';
 import { buildFiles } from './offline/build';
+import fs from 'node:fs';
 
 interface FlagInputs {
   save: boolean;
@@ -22,13 +23,13 @@ export interface AppOptions { port: number, offline: boolean, routerPath: string
 
 export const createApp = (opts: AppOptions): express.Express => {
   const { port, offline, routerPath } = opts;
-  
+
   // TODO(davideast): Check for offline data if offline arg exists
   const expressApp = createExpressApp({ offline });
 
   const router = express.Router();
   router.use(routerPath, expressApp);
-  
+
   const hostApp = express();
   hostApp.use(router);
   return hostApp;
@@ -49,19 +50,21 @@ export const saveOfflineApi = async () => {
 };
 
 // TODO(davideast): Use a CLI tool and maybe some chalk
-if(argv && argv.serve) {
+if (argv && argv.serve) {
   serve({
     port: argv.port || 3002,
     offline: argv.offline || false,
     routerPath: argv.routerPath || ''
   });
-} else if(argv && argv.save) {
+} else if (argv && argv.save) {
   saveOfflineApi();
-} else if(argv && (argv.v || argv.version)) {
-  const pkg = require('./package.json');
-  console.log(pkg.version);  
+} else if (argv && (argv.v || argv.version)) {
+  const file = fs.readFileSync('./package.json', 'utf8');
+  const pkg = JSON.parse(file);
+  console.log(pkg.version);
 } else {
-  const pkg = require('./package.json');
+  const file = fs.readFileSync('./package.json', 'utf8');
+  const pkg = JSON.parse(file);
   console.log(`
   
   hnpwa-api version ${pkg.version}
