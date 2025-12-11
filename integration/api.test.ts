@@ -49,6 +49,12 @@ describe('Integration: API & Server', () => {
     expect(response.body).toHaveProperty('created_time');
   });
 
+  it('should fetch user with hyphen in username', async () => {
+    const response = await request(app).get('/user/grey-area.json');
+    expect(response.status).toBe(200);
+    expect(response.body).toHaveProperty('id', 'grey-area');
+  });
+
   it('should handle 404 for unknown routes', async () => {
     const response = await request(app).get('/unknown-route');
     // Express default 404 is HTML usually, but createBareExpressApp might not have a catch-all
