@@ -27,8 +27,12 @@ export async function getItemAndComments(id: number, firebaseApp: firebase.app.A
    // strip kids from response
    delete item.kids;
    
-   // TODO(davideast): Poll parts
-   delete item.parts;
+   if(item.type === 'poll' && item.parts && item.parts.length) {
+     const pollParts = await Promise.all(item.parts.map((part: any) => getItemAndComments(part, firebaseApp)));
+     item.parts = pollParts.map(p => p ? p.item : null).filter(p => p !== null);
+   } else {
+     delete item.parts;
+   }
 
    return {
       item,
