@@ -37,7 +37,7 @@ export interface ApiConfig {
 export const routes = {
   NEWS_AND_STUFF: /^\/(news.json|newest.json|ask.json|show.json|jobs.json)$/,
   ITEM: /^\/item\/(\d+).json$/,
-  USER: /^\/user\/(\w+).json$/,
+  USER: /^\/user\/([\w-]+).json$/,
 };
 
 /**
