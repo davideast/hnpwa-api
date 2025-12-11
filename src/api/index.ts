@@ -75,7 +75,7 @@ function itemEndpointFactory() {
 function userEndpointFactory() {
   return {
     topic: 'user',
-    url: `https://api.hnpwa.com/v0/users/davideast.json`,
+    url: `https://api.hnpwa.com/v0/user/davideast.json`,
     maxPages: null
   };
 }
