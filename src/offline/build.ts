@@ -64,7 +64,7 @@ export async function buildFiles(hnapi: Api) {
           const allItems = await Promise.all(itemPromises);
           const itemsJson = JSON.stringify(allItems);
           fs.writeFile(`${__dirname}/items.json`, itemsJson, 'utf8', () => {
-            resolve();
+            resolve(void 0);
           });
         }
       }); 

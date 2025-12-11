@@ -1,5 +1,6 @@
 import { HackerNewsItem, HackerNewsItemTree } from '../api';
-import * as firebase from 'firebase';
+// @ts-ignore
+import firebase from 'firebase/compat/app';
 
 /**
  * Retrieves an "item" and its comment tree by an id. The building block of

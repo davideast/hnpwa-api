@@ -1,6 +1,6 @@
-import * as functions from 'firebase-functions';
-import * as cors from 'cors';
-import * as express from 'express';
+import * as functions from 'firebase-functions/v1';
+import cors from 'cors';
+import express from 'express';
 import { 
   createExpressApp, 
   ApiConfig, 
@@ -9,7 +9,7 @@ import {
 
 export { publisher } from './publish';
 
-export type Trigger = functions.TriggerAnnotated & ((req: Express.Request, resp: Express.Response) => void);
+export type Trigger = functions.HttpsFunction & ((req: Express.Request, resp: Express.Response) => void);
 
 /**
  * Configure the Cloud Function Trigger based on options. The configuration

@@ -1,5 +1,6 @@
 import { HackerNewsItem, Story, story } from '../api';
-import * as firebase from 'firebase';
+// @ts-ignore
+import firebase from 'firebase/compat/app';
 
 /**
  * Retrieve a set of "stories" based on the HN topic ("topstories", 
