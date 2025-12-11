@@ -38,6 +38,13 @@ export const trigger = (config?: ApiConfig): Trigger => {
    
    const expressApp = createExpressApp(mergedConfig);
 
+   // When hosted in a cloud function, the function name is prefixed to the path.
+   // The user may also be adding the function name to the routerPath which will
+   // cause a route mismatch.
+   if (process.env.FUNCTION_NAME && mergedConfig.routerPath === `/${process.env.FUNCTION_NAME}`) {
+      mergedConfig.routerPath = '';
+   }
+
    const router = express.Router();
    router.use(mergedConfig.routerPath || '', expressApp);
    const tscRouterHack = router as any;
