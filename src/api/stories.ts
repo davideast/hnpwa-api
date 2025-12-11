@@ -18,10 +18,10 @@ export async function stories(topic: string, options: {}, firebaseApp: firebase.
   const stories = await storyRef.once('value');
   const items: number[] = stories.val().slice(startIndex, endIndex);
   const promises = items.map(id => ref.child('item').child(id.toString()).once('value'));
-  const resolves: Story[] = await Promise.all(promises.map(async snap => {
+  const resolves: Story[] = (await Promise.all(promises.map(async snap => {
     const snapshot = await snap;
     const item = snapshot.val() as HackerNewsItem;
-    return story(item);
-  }));
+    return item ? story(item) : null;
+  }))).filter((item): item is Story => item !== null);
   return resolves;
 }
