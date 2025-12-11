@@ -41,6 +41,20 @@ describe('Integration: API & Server', () => {
     expect(itemResponse.body).toHaveProperty('title');
   });
 
+  it('should fetch poll data correctly', async () => {
+    // This is a known poll item
+    const pollId = 33223222;
+    const response = await request(app).get(`/item/${pollId}.json`);
+    expect(response.status).toBe(200);
+    expect(response.body).toHaveProperty('id', pollId);
+    expect(response.body).toHaveProperty('type', 'poll');
+    expect(response.body).toHaveProperty('parts');
+    expect(Array.isArray(response.body.parts)).toBe(true);
+    expect(response.body.parts.length).toBeGreaterThan(0);
+    expect(response.body.parts[0]).toHaveProperty('id');
+    expect(response.body.parts[0]).toHaveProperty('type', 'pollopt');
+  });
+
   it('should fetch user details correctly', async () => {
     // 'davideast' is used in the example endpoint factory
     const response = await request(app).get('/user/davideast.json');

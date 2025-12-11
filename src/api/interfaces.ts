@@ -29,7 +29,7 @@ export interface HackerNewsItem {
   /** The title of the story, poll or job */
   title: string;
   /** A list of related pollopts, in display order */
-  parts?: number[];
+  parts?: any[];
   /** In the case of stories or polls, the total comment count */
   descendants: number;
 }
@@ -72,6 +72,7 @@ export interface Item {
   comments: Item[];
   level?: number;
   comments_count: number;
+  parts?: any[];
 }
 
 export interface User {
@@ -169,7 +170,8 @@ export function itemTransform(tree: HackerNewsItemTree, level = 0) {
       dead: item.dead,
       comments: [],
       comments_count: 0,
-      level
+      level,
+      parts: item.parts
    };
 
    mappedItem = parseUrl(item, mappedItem);
