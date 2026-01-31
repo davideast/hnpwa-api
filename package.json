@@ -1,48 +1,17 @@
 {
-  "name": "hnpwa-api",
-  "version": "0.3.0",
-  "description": "Deploy a Hacker News API on your own domain.",
-  "engines": {
-    "node": ">=22"
-  },
-  "main": "index.js",
-  "bin": {
-    "hnpwa-api": "./cli.js"
-  },
+  "name": "hnpwa-monorepo",
+  "version": "0.0.0",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
   "scripts": {
-    "tsc": "tsc",
-    "build": "rm -rf dist && npm run tsc && cp ./package.json ./dist/package.json && cp .npmignore ./dist/.npmignore && cp README.md ./dist/README.md",
-    "watch": "tsc -w",
-    "serve": "npm run build && node ./dist/test/serve.test.js",
-    "pack": "npm run build && npm pack dist",
-    "pub:server": "npm run build && node ./dist/test/publish.test.js",
-    "offline:test": "npm run build && node ./dist/test/offline.test.js",
-    "test:integration": "vitest run"
-  },
-  "dependencies": {
-    "@types/compression": "^1.8.1",
-    "@types/cors": "^2.8.19",
-    "@types/cron": "^2.4.3",
-    "@types/express": "^5.0.5",
-    "@types/fs-extra": "^11.0.4",
-    "@types/yargs": "^17.0.35",
-    "compression": "^1.8.1",
-    "cors": "^2.8.5",
-    "cron": "^4.3.4",
-    "express": "^5.1.0",
-    "firebase": "^10.14.1",
-    "firebase-admin": "^12.7.0",
-    "firebase-functions": "^5.1.1",
-    "fs-extra": "^11.3.2",
-    "moment": "^2.30.1",
-    "yargs": "^17.7.2"
+    "test": "vitest",
+    "build": "npm run build --workspaces",
+    "clean": "rm -rf node_modules packages/*/node_modules"
   },
   "devDependencies": {
-    "@types/supertest": "^6.0.3",
-    "nodemon": "^3.1.11",
-    "supertest": "^7.1.4",
-    "typescript": "5.6",
-    "vitest": "^4.0.10"
-  },
-  "typings": "index.d.ts"
+    "typescript": "^5.6.0",
+    "vitest": "^1.0.0"
+  }
 }

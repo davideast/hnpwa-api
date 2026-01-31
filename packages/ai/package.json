@@ -1,0 +1,20 @@
+{
+  "name": "@hnpwa/ai",
+  "version": "0.1.0",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@hnpwa/core": "*",
+    "@hnpwa/llm": "*",
+    "ai": "^3.0.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.0",
+    "vitest": "^1.0.0",
+    "@types/node": "^20.0.0"
+  }
+}
