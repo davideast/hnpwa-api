@@ -1,0 +1,33 @@
+name: ⚡ Auto-Merge Keeper
+on:
+  workflow_run:
+    workflows: ["Integration Tests"]
+    types: [completed]
+
+jobs:
+  merge:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'mcp' }}
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Merge PR
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+        run: |
+          BRANCH="${{ github.event.workflow_run.head_branch }}"
+          REPO="${{ github.repository }}"
+          echo "Looking for PR from branch: $BRANCH in repo: $REPO"
+
+          PR=$(gh pr list --repo "$REPO" --head "$BRANCH" --json number --jq '.[0].number')
+
+          if [ -n "$PR" ]; then
+            echo "Found PR #$PR - attempting merge..."
+            gh pr merge "$PR" --repo "$REPO" --squash --delete-branch || echo "Merge failed or already merged"
+          else
+            echo "No open PR found for branch: $BRANCH"
+          fi
