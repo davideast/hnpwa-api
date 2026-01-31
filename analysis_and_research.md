@@ -1,108 +1,92 @@
-# MCP Transition Analysis for HNPWA API
+# Universal Data SDK Analysis: HNPWA API
 
 ## 1. Executive Summary
 
-This document analyzes the path to converting the existing HNPWA (Hacker News Progressive Web App) API into a Model Context Protocol (MCP) server. The goal is to move beyond simple CRUD/data domain tools and design "behavior-based" tools that align with Agent Design Principles. This approach empowers AI agents to interact with Hacker News data more effectively, mimicking human workflows rather than database queries.
+This document outlines the architectural transformation of the HNPWA API into a **Universal Data SDK**. The goal is to decouple the core Hacker News logic from specific consumption interfaces (Express API, MCP, AI SDKs) by adopting a strict "Four-Layer Monorepo" pattern. This ensures maximum portability, maintainability, and alignment with Agent Design Principles.
 
-## 2. Current Architecture Analysis
+## 2. Architectural North Star: The Four-Layer Monorepo
 
-The current API (`src/api/index.ts`) provides a set of optimized endpoints that aggregate data from the official Hacker News Firebase API. It is designed primarily for UI consumption, focusing on reducing network requests and payload size.
+We will restructure the codebase into a monorepo with the following strict dependency chain:
 
-### Key Existing Capabilities (Schema-Based)
-*   **Feeds:** `news`, `newest`, `ask`, `show`, `jobs` (Returns `Story[]`).
-*   **Items:** `item(id)` (Returns `Item` with recursive `comments` tree).
-*   **Users:** `user(id)` (Returns `User` profile).
+| Layer | Package | Responsibility | Dependencies |
+| --- | --- | --- | --- |
+| **Foundation** | `@hnpwa/core` | Pure TypeScript. Logic, fetchers, types, and classes. | **Zero** AI/Server deps. |
+| **Gateway** | `@hnpwa/mcp` | The executable Model Context Protocol server. | `@hnpwa/core` + `@modelcontextprotocol/sdk` |
+| **Translator** | `@hnpwa/llm` | Pure logic adapters. Maps tools to provider schemas. | `@hnpwa/core` |
+| **Framework** | `@hnpwa/ai` | The Framework Kit. Exports tools for Vercel AI SDK. | `@hnpwa/core` + `@hnpwa/llm` |
 
-These functions are currently mapped to Express.js routes (`src/server.ts`) like `/news.json` and `/item/:id.json`.
+---
 
-## 3. Agent Design Principles Application
+## 3. Layer 1: The Foundation (`@hnpwa/core`)
 
-To build a robust MCP server, we must apply the following principles:
+**Goal:** Extract business logic from `src/api` into a pure TypeScript library.
 
-### A. Tools vs. Skills
-*   **Principle:** Tools provide evidence (raw data/facts); Skills provide expertise (decisions/logic).
-*   **Application:** Our tools should strictly fetch HN data without attempting to summarize sentiment or decide if a story is "interesting." That is the job of the Agent's "Skill" (the prompt/model).
+### Strategy
+1.  **Migrate Types:** Move `Story`, `Item`, `User`, and `HackerNewsItem` interfaces to `packages/core/src/types.ts`.
+2.  **Extract Logic:** Move `storyFactory`, `itemTransform`, and `apiMap` logic to `packages/core/src/client.ts`.
+3.  **Network Abstraction:** The current `firebase` dependency might be heavy. If possible, switch to a lighter HTTP fetcher or keep `firebase` contained strictly within this package, ensuring no leakage to upper layers.
+4.  **Zero-Dep Rule:** Ensure `express` and routing logic remain in the legacy app or a separate package, not in `core`.
 
-### B. Deterministic Verbs
-*   **Principle:** Use mechanical verbs for tools (`read`, `get`) rather than cognitive verbs (`analyze`, `check`).
-*   **Application:**
-    *   *Bad:* `check_top_stories`, `analyze_comments`.
-    *   *Good:* `read_news_feed`, `read_story_discussion`.
+---
 
-### C. Map Behaviors, Not Schemas
-*   **Principle:** Tool names should reflect *User Behavior* rather than internal data structures.
-*   **Application:**
-    *   *Schema-based (Current):* `get_item`, `get_user`, `get_stories`.
-    *   *Behavior-based (Proposed):* `read_news_feed` (scanning headlines), `read_story_discussion` (reading content & comments), `read_user_profile` (checking background).
+## 4. Layer 2: The Gateway (`@hnpwa/mcp`)
 
-### D. Zoom Mechanics
-*   **Principle:** Handle scale by offering summaries ("Zoom Out") and details ("Zoom In") to manage context window limits.
-*   **Application:** The `item(id)` function currently returns a potentially massive recursive comment tree. An agent-friendly tool must handle this by either truncating deep comments or providing a way to fetch specific branches.
+**Goal:** Implement the MCP Server using **Behavior-Based Tools**.
 
-## 4. Proposed Behavior-Based Tools
+This layer acts as the "Hands" of the agent, providing raw evidence. We apply Agent Design Principles here to ensure tools are deterministic and behavior-oriented.
 
-Based on the analysis, we propose the following set of MCP tools.
+### Proposed Behavior-Based Tools
 
-### Tool 1: `read_news_feed`
-**Behavior:** Simulates a user visiting a specific page of Hacker News (e.g., Front Page, New, Ask HN) to scan for interesting content.
-*   **Inputs:**
-    *   `topic` (string, enum): `news` (default), `newest`, `ask`, `show`, `jobs`.
-    *   `page` (number, optional): Page number (1-10).
-*   **Output:** A list of story summaries (Title, ID, Score, Author, TimeAgo).
-*   **Why Behavior-Based?** It matches the workflow of "checking the news" rather than "querying the story database."
+#### Tool 1: `read_news_feed`
+*   **Behavior:** Simulates scanning the front page or specific sections.
+*   **Inputs:** `topic` ("news", "ask", "jobs", etc.), `page` (number).
+*   **Output:** List of story summaries.
+*   **Implementation:** Wraps `@hnpwa/core`'s feed fetching methods.
 
-### Tool 2: `read_story_discussion`
-**Behavior:** Simulates a user clicking on a story to read the content and the discussion surrounding it.
-*   **Inputs:**
-    *   `item_id` (number): The ID of the story or item.
-*   **Output:** The story details (Title, Text/URL) and a *flattened* or *truncated* list of top-level comments.
-*   **Zoom Mechanic:**
-    *   *Problem:* The current `itemMap` returns a deeply nested tree.
-    *   *Solution:* The tool should format the output to be token-efficient. It might return the story text + top 10 root comments, with a note that "X more comments exist" to prompt further specific queries if needed.
+#### Tool 2: `read_story_discussion`
+*   **Behavior:** Simulates clicking a story to read content and discussion.
+*   **Inputs:** `item_id` (number).
+*   **Zoom Mechanic:** The `core` returns a full tree. The `mcp` layer must implement a "Zoom" strategy:
+    *   *Default:* Return story text + flattened top 10 comments.
+    *   *Detail:* Allow requesting specific sub-threads if needed (future expansion).
+*   **Output:** Story details + curated comment list.
 
-### Tool 3: `read_user_profile`
-**Behavior:** Simulates a user clicking on a username to see their bio and stats.
-*   **Inputs:**
-    *   `username` (string): The user's handle.
-*   **Output:** User bio, creation date, karma.
-*   **Why Behavior-Based?** Matches the intent of "vetting" a source or learning about a community member.
+#### Tool 3: `read_user_profile`
+*   **Behavior:** Checking a user's background.
+*   **Inputs:** `username`.
+*   **Output:** User bio and stats.
 
-## 5. Technical Implementation Strategy
+### Implementation Detail
+This package depends on `@hnpwa/core` for data and `@modelcontextprotocol/server` for the transport. It does **not** contain business logic.
 
-### Step 1: Install MCP SDK
-Add `@modelcontextprotocol/server` and `zod` to the dependencies.
+---
 
-### Step 2: Create MCP Server Entrypoint
-Create a new file `src/mcp/server.ts` that initializes the `McpServer`.
+## 5. Layers 3 & 4: Translator & Framework (`@hnpwa/llm` & `@hnpwa/ai`)
 
-### Step 3: Implement Tool Wrappers
-Wrap the existing `hnapi` functions into MCP Tools.
+**Goal:** Enable direct usage in AI applications (Vercel AI SDK).
 
-**Example `read_news_feed` Implementation:**
-```typescript
-server.tool(
-  "read_news_feed",
-  "Read the latest headlines from Hacker News to see what is happening.",
-  {
-    topic: z.enum(["news", "newest", "ask", "show", "jobs"]).default("news"),
-    page: z.number().min(1).max(10).default(1)
-  },
-  async ({ topic, page }) => {
-    // Reuse existing logic from src/api/index.ts
-    const stories = await hnapi[topic]({ page });
-    return {
-      content: [{
-        type: "text",
-        text: JSON.stringify(stories, null, 2)
-      }]
-    };
-  }
-);
-```
+*   **`@hnpwa/llm`:** Contains pure adapters that convert `@hnpwa/core` types into schemas (e.g., JSON Schema for OpenAI).
+*   **`@hnpwa/ai`:** Exports a `createTools()` function compatible with the Vercel AI SDK `generateText` function. This allows developers to use HNPWA tools directly in their Next.js/Node.js AI apps without running a separate MCP server process.
 
-### Step 4: Express Integration
-Mount the MCP server onto the existing Express app using the MCP Express adapter (or SSE transport) to allow it to run alongside the existing JSON API.
+---
 
-## 6. Conclusion
+## 6. Migration Plan (State Protocol)
 
-By adopting these behavior-based tools, the HNPWA API will evolve from a passive data source into an active participant in an Agent's workflow. The shift from `getItem` to `read_story_discussion` is subtle in code but profound in how it guides the LLM to interact with the system effectively and deterministically.
+We will follow the **State Protocol** defined in `.agent/mcp/state.md`.
+
+### Phase 0: Workspace Scaffolding
+*   Initialize npm workspaces.
+*   Create directory structure for `packages/{core,mcp,llm,ai}`.
+
+### Phase 1: Core Extraction
+*   Move `src/api` code to `packages/core`.
+*   Refactor to remove Express dependencies.
+*   Verify `import { HnClient } from '@hnpwa/core'` works.
+
+### Phase 2: MCP Server
+*   Implement `packages/mcp/src/index.ts`.
+*   Map `read_news_feed` -> `HnClient.getStories()`.
+*   Verify `npx @hnpwa/mcp` starts the server.
+
+### Phase 3 & 4: AI Integration
+*   Build the adapters and framework kit.
