@@ -70,23 +70,55 @@ This package depends on `@hnpwa/core` for data and `@modelcontextprotocol/server
 
 ---
 
-## 6. Migration Plan (State Protocol)
+## 6. Migration Plan & Verification
 
-We will follow the **State Protocol** defined in `.agent/mcp/state.md`.
+We will follow the **State Protocol** defined in `.agent/mcp/state.md`. Each phase must pass its specific verification test before proceeding.
 
 ### Phase 0: Workspace Scaffolding
-*   Initialize npm workspaces.
-*   Create directory structure for `packages/{core,mcp,llm,ai}`.
+*   **Task:** Initialize npm workspaces and create directory structure for `packages/{core,mcp,llm,ai}`.
+*   **Verification:**
+    ```bash
+    # Check directory structure
+    ls -F packages/
+    # Expected output: ai/ core/ llm/ mcp/
 
-### Phase 1: Core Extraction
-*   Move `src/api` code to `packages/core`.
-*   Refactor to remove Express dependencies.
-*   Verify `import { HnClient } from '@hnpwa/core'` works.
+    # Verify workspace config in root package.json
+    grep "workspaces" package.json
+    ```
 
-### Phase 2: MCP Server
-*   Implement `packages/mcp/src/index.ts`.
-*   Map `read_news_feed` -> `HnClient.getStories()`.
-*   Verify `npx @hnpwa/mcp` starts the server.
+### Phase 1: Core Extraction (`@hnpwa/core`)
+*   **Task:** Move `src/api` code to `packages/core`. Refactor to remove Express dependencies.
+*   **Verification:**
+    ```bash
+    # 1. Verify clean dependency tree (no express, no zode)
+    grep -E "express|zod" packages/core/package.json
+    # Expected: (empty)
 
-### Phase 3 & 4: AI Integration
-*   Build the adapters and framework kit.
+    # 2. Verify Client Instantiation (Create a test file verify.ts)
+    # import { HnClient } from '@hnpwa/core';
+    # console.log(new HnClient() ? 'Success' : 'Fail');
+    npx tsx verify.ts
+    ```
+
+### Phase 2: Gateway Implementation (`@hnpwa/mcp`)
+*   **Task:** Implement `packages/mcp/src/index.ts` mapping tools to `HnClient`.
+*   **Verification:**
+    ```bash
+    # 1. Start Server in dry-run mode (if applicable) or check help
+    npx @hnpwa/mcp --help
+
+    # 2. Connect with Inspector (Manual)
+    # npx @modelcontextprotocol/inspector npx @hnpwa/mcp
+    ```
+
+### Phase 3 & 4: AI Integration (`@hnpwa/llm` & `@hnpwa/ai`)
+*   **Task:** Build schema adapters and Vercel AI SDK integration.
+*   **Verification:**
+    ```bash
+    # Verify Vercel SDK compatibility
+    # Create test-ai.ts:
+    # import { createTools } from '@hnpwa/ai';
+    # console.log(JSON.stringify(createTools(), null, 2));
+    npx tsx test-ai.ts
+    # Expected: Output contains valid JSON Schema for tools
+    ```
