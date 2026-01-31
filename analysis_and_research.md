@@ -11,7 +11,7 @@ We will restructure the codebase into a monorepo with the following strict depen
 | Layer | Package | Responsibility | Dependencies |
 | --- | --- | --- | --- |
 | **Foundation** | `@hnpwa/core` | Pure TypeScript. Logic, fetchers, types, and classes. | **Zero** AI/Server deps. |
-| **Gateway** | `@hnpwa/mcp` | The executable Model Context Protocol server. | `@hnpwa/core` + `@modelcontextprotocol/sdk` |
+| **Gateway** | `@hnpwa/mcp` | The executable Model Context Protocol server. | `@hnpwa/core` + `@modelcontextprotocol/server` |
 | **Translator** | `@hnpwa/llm` | Pure logic adapters. Maps tools to provider schemas. | `@hnpwa/core` |
 | **Framework** | `@hnpwa/ai` | The Framework Kit. Exports tools for Vercel AI SDK. | `@hnpwa/core` + `@hnpwa/llm` |
 
@@ -122,3 +122,100 @@ We will follow the **State Protocol** defined in `.agent/mcp/state.md`. Each pha
     npx tsx test-ai.ts
     # Expected: Output contains valid JSON Schema for tools
     ```
+
+---
+
+## 7. GitHub Actions Continuous Loop Analysis
+
+### Objective
+
+Create a continuous feedback loop where Jules receives the next prompt upon completion of an action.
+- **Success Path:** CI passes -> Auto-merge -> New Jules session triggered with `next-prompt.md`.
+- **Failure Path:** CI fails -> Report failure -> New Jules session triggered to fix the issue.
+
+### Analysis of `jules-stitch-loop` Pattern
+
+The reference implementation uses a combination of GitHub Actions and TypeScript scripts to manage this lifecycle.
+
+#### Key Components
+
+1.  **`dispatch-jules.ts`**: A script that triggers a new Jules session.
+    -   Uses `@google/jules-sdk`.
+    -   Constructs the payload for the new session, including the prompt content.
+
+2.  **`ci-report.ts`**: A script that analyzes the CI run.
+    -   Determines if the build/tests failed.
+    -   Formats a failure report to be fed back into Jules as the "next prompt".
+
+### Proposed Strategy
+
+#### A. The "Next Prompt" Generation
+
+Jules must generate a `next-prompt.md` file *during* its session, before submitting the PR. This file contains the instructions for the *next* logical step in the project's roadmap (e.g., "Phase 1 is done, now start Phase 2").
+
+*   **Location:** `.jules/next-prompt.md` (or root `next-prompt.md`).
+*   **Responsibility:** The Agent (Jules) creates this file as part of its final steps.
+
+#### B. The Loop Implementation
+
+**Scenario 1: Success (Merge)**
+1.  **Event:** PR merged (closed with `merged: true`).
+2.  **Action:** GitHub Action (`jules-loop.yml`) triggers.
+3.  **Step:** Read content of `next-prompt.md` from the *merged commit* (main branch).
+4.  **Step:** Execute `scripts/dispatch-jules.ts` using `@google/jules-sdk`.
+    -   **Input:** Content of `next-prompt.md`.
+    -   **Action:** Triggers a new Jules session on a new branch.
+
+**Scenario 2: Failure (CI Check Failed)**
+1.  **Event:** Workflow run completed with `conclusion: failure`.
+2.  **Action:** GitHub Action (`jules-rescue.yml`) triggers.
+3.  **Step:** Execute `scripts/ci-report.ts` to gather error logs.
+4.  **Step:** Execute `scripts/dispatch-jules.ts`.
+    -   **Input:** "CI Failed. Fix these errors:\n\n" + [Error Logs].
+    -   **Action:** Triggers a new Jules session on the *same branch* to fix the code.
+
+### Implementation Details
+
+**Dependencies**
+- `@google/jules-sdk`: For programmatic dispatch.
+- `tsx`: To run the TypeScript scripts.
+- GitHub Secrets: `JULES_API_KEY`.
+
+**Workflow Structure**
+
+```yaml
+# .github/workflows/jules-loop.yml
+name: 🔄 Jules Loop
+on:
+  pull_request:
+    types: [closed]
+
+jobs:
+  dispatch-next:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Dispatch Jules
+        run: npx tsx scripts/dispatch-jules.ts --prompt-file next-prompt.md
+```
+
+```yaml
+# .github/workflows/jules-rescue.yml
+name: 🚑 Jules Rescue
+on:
+  workflow_run:
+    workflows: ["Integration Tests"]
+    types: [completed]
+
+jobs:
+  dispatch-fix:
+    if: github.event.workflow_run.conclusion == 'failure'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Report & Dispatch
+        run: |
+           npx tsx scripts/ci-report.ts > failure-report.md
+           npx tsx scripts/dispatch-jules.ts --prompt-file failure-report.md --branch ${{ github.event.workflow_run.head_branch }}
+```
