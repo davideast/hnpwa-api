@@ -1,0 +1,40 @@
+name: 🔄 Jules Loop
+on:
+  pull_request:
+    types: [closed]
+
+jobs:
+  dispatch-next:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout merged code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Read Next Prompt
+        id: read_prompt
+        run: |
+          if [ -f "next-prompt.md" ]; then
+            echo "Found next-prompt.md"
+            echo "has_prompt=true" >> $GITHUB_OUTPUT
+          else
+            echo "No next-prompt.md found."
+            echo "has_prompt=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Dispatch Jules (Loop)
+        if: steps.read_prompt.outputs.has_prompt == 'true'
+        env:
+          JULES_API_KEY: ${{ secrets.JULES_API_KEY }}
+        run: |
+          npm install -g tsx
+          npx tsx scripts/dispatch-jules.ts --prompt-file next-prompt.md
