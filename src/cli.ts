@@ -2,22 +2,10 @@
 
 import * as yargs from 'yargs';
 import express from 'express';
+import chalk from 'chalk';
 import api from './api';
 import { createExpressApp, initializeApp } from './server';
 import { buildFiles } from './offline/build';
-import fs from 'node:fs';
-
-interface FlagInputs {
-  save: boolean;
-  serve: boolean;
-  port: number;
-  offline: boolean;
-  routerPath: string;
-  v: boolean;
-  version: boolean;
-}
-
-const argv: FlagInputs = yargs.argv as any;
 
 export interface AppOptions { port: number, offline: boolean, routerPath: string };
 
@@ -38,42 +26,71 @@ export const createApp = (opts: AppOptions): express.Express => {
 export const serve = (opts: AppOptions): express.Express => {
   const { port } = opts;
   const hostApp = createApp(opts);
-  hostApp.listen(`${port}`, () => console.log(`Listening on ${port}!`));
+  hostApp.listen(`${port}`, () => console.log(chalk.green(`Listening on ${port}!`)));
   return hostApp;
 }
 
 export const saveOfflineApi = async () => {
   const app = initializeApp({ firebaseAppName: `${Date.now()}` });
   const hnapi = api(app);
+  console.log(chalk.cyan('Starting offline build...'));
   await buildFiles(hnapi);
+  console.log(chalk.green('Offline build complete!'));
   process.exit(0);
 };
 
-// TODO(davideast): Use a CLI tool and maybe some chalk
-if (argv && argv.serve) {
-  serve({
-    port: argv.port || 3002,
-    offline: argv.offline || false,
-    routerPath: argv.routerPath || ''
-  });
-} else if (argv && argv.save) {
-  saveOfflineApi();
-} else if (argv && (argv.v || argv.version)) {
-  const file = fs.readFileSync('./package.json', 'utf8');
-  const pkg = JSON.parse(file);
-  console.log(pkg.version);
-} else {
-  const file = fs.readFileSync('./package.json', 'utf8');
-  const pkg = JSON.parse(file);
-  console.log(`
-  
-  hnpwa-api version ${pkg.version}
-  "${pkg.description}"
-
-  Available commands:
-    --serve (--serve --port=4000 --offline=true --routerPath="/api")
-    --save # Saves current HN data set to node_modules/hnpwa-api/offline
-    -v # or --version
-    
-  `)
+if (require.main === module) {
+  // Configure yargs
+  yargs
+    .scriptName('hnpwa-api')
+    .usage(chalk.bold('$0 <cmd> [args]'))
+    .command(
+      'serve',
+      'Start the API server',
+      (yargs) => {
+        return yargs
+          .option('port', {
+            alias: 'p',
+            type: 'number',
+            default: 3002,
+            describe: 'Port to run the server on'
+          })
+          .option('offline', {
+            alias: 'o',
+            type: 'boolean',
+            default: false,
+            describe: 'Serve from offline cache'
+          })
+          .option('routerPath', {
+            alias: 'r',
+            type: 'string',
+            default: '',
+            describe: 'Path prefix for the router'
+          });
+      },
+      (argv) => {
+        serve({
+          port: argv.port,
+          offline: argv.offline,
+          routerPath: argv.routerPath
+        });
+      }
+    )
+    .command(
+      'save',
+      'Save offline data to node_modules/hnpwa-api/offline',
+      (yargs) => {
+        return yargs;
+      },
+      (argv) => {
+        saveOfflineApi();
+      }
+    )
+    .demandCommand(1, chalk.red('You must provide a valid command.'))
+    .help()
+    .alias('h', 'help')
+    .alias('v', 'version')
+    .epilog(chalk.gray('For more information, visit https://github.com/davideast/hnpwa-api'))
+    .strict()
+    .argv;
 }
