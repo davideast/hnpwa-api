@@ -16,6 +16,7 @@ const pageStories = (topic: string, options: ApiOptions): Story[] => {
 };
 
 const offlineApi = (app: any) => {
+  let itemsCachePromise: Promise<Map<number, Item>> | null = null;
   return {
     index() { return { name: 'Welcome to the HNPWA API' }; },
     async news(options: ApiOptions) {
@@ -37,8 +38,14 @@ const offlineApi = (app: any) => {
       return TEST_USER as User;
     },
     async item(id: number): Promise<Item> {
-      const items = <Item[]>await getFile('items');
-      return items.find(item => item.id == id)!;
+      if (!itemsCachePromise) {
+        itemsCachePromise = (async () => {
+          const items = <Item[]>await getFile('items');
+          return new Map(items.map(item => [item.id, item]));
+        })();
+      }
+      const itemsCache = await itemsCachePromise;
+      return itemsCache.get(id)!;
     }
   };
 };
