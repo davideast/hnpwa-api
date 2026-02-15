@@ -1,6 +1,12 @@
 import { HackerNewsItem, HackerNewsItemTree } from '../api';
 // @ts-ignore
 import firebase from 'firebase/compat/app';
+import LRUCache from 'lru-cache';
+
+const cache = new LRUCache<number, HackerNewsItemTree | null>({
+   max: 10000,
+   maxAge: 1000 * 60 * 10
+});
 
 /**
  * Retrieves an "item" and its comment tree by an id. The building block of
@@ -14,10 +20,18 @@ import firebase from 'firebase/compat/app';
  * @param firebaseApp
  */
 export async function getItemAndComments(id: number, firebaseApp: firebase.app.App): Promise<HackerNewsItemTree | null> {
+   const cached = cache.get(id);
+   if (cached !== undefined) {
+      return cached;
+   }
+
    const itemRef = firebaseApp.database().ref('v0/item').child(id.toString());
    const snap: firebase.database.DataSnapshot = await itemRef.once('value');
    const item = snap.val() as HackerNewsItem;
-   if(!item) { return null; }
+   if(!item) {
+      cache.set(id, null);
+      return null;
+   }
 
    let comments: (HackerNewsItemTree | null)[] = [];
    if (item.kids && item.kids.length) {
@@ -34,8 +48,12 @@ export async function getItemAndComments(id: number, firebaseApp: firebase.app.A
      delete item.parts;
    }
 
-   return {
+   const result = {
       item,
       comments  
    };
+
+   cache.set(id, result);
+
+   return result;
 }
