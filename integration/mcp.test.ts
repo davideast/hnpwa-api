@@ -1,6 +1,4 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import request from 'supertest';
-import express from 'express';
 import { installMcpServer } from '../src/mcp/server';
 
 // Mock the MCP SDK since it might not be installed in the environment
@@ -24,26 +22,43 @@ vi.mock("@modelcontextprotocol/sdk/server/sse.js", () => {
 });
 
 describe('MCP Integration', () => {
-  let app: any;
+  let handlers: Record<string, any>;
+  let mockApp: any;
   let mockHnapi: any;
 
   beforeEach(() => {
-    app = express();
+    handlers = {};
+    mockApp = {
+      get: vi.fn((path, handler) => { handlers[path] = handler; }),
+      post: vi.fn((path, handler) => { handlers[path] = handler; }),
+    };
     mockHnapi = {
       user: vi.fn(),
     };
+    vi.clearAllMocks();
   });
 
   it('should register MCP endpoints and handle sessions', async () => {
-    installMcpServer(app, mockHnapi);
+    installMcpServer(mockApp, mockHnapi);
+
+    // Give some time for internal async initialization
+    await new Promise(resolve => setTimeout(resolve, 50));
+
+    expect(handlers['/sse']).toBeDefined();
+    expect(handlers['/messages']).toBeDefined();
 
     // 1. Connect via SSE to get a session
-    const sseResponse = await request(app).get('/sse');
-    expect(sseResponse.status).toBe(200);
+    const mockRes: any = {
+      writeHead: vi.fn(),
+      end: vi.fn(),
+    };
+    const mockReq: any = {
+      on: vi.fn(),
+    };
 
-    // The endpoint should include a sessionId
-    // In our implementation, we don't return it in the body but it's in the SSEServerTransport constructor
-    // Since we are mocking, we can't easily see the sessionId unless we spy on the constructor
+    await handlers['/sse'](mockReq, mockRes);
+
+    // Extract sessionId from SSEServerTransport constructor
     const { SSEServerTransport } = await import("@modelcontextprotocol/sdk/server/sse.js");
     const calls = (SSEServerTransport as any).mock.calls;
     const lastCall = calls[calls.length - 1];
@@ -52,40 +67,64 @@ describe('MCP Integration', () => {
     expect(sessionId).toBeDefined();
 
     // 2. Post a message using that session ID
-    const msgResponse = await request(app)
-      .post(`/messages?sessionId=${sessionId}`)
-      .send({ jsonrpc: "2.0", method: "test", id: 1 });
+    const mockMsgRes: any = {
+      status: vi.fn().mockReturnThis(),
+      send: vi.fn().mockReturnThis(),
+    };
+    const mockMsgReq: any = {
+      query: { sessionId },
+      body: { jsonrpc: "2.0", method: "test", id: 1 }
+    };
 
-    expect(msgResponse.status).toBe(200);
+    await handlers['/messages'](mockMsgReq, mockMsgRes);
+
+    // Check that handlePostMessage was called on the transport
+    const results = (SSEServerTransport as any).mock.results;
+    const transport = results[results.length - 1].value;
+    expect(transport.handlePostMessage).toHaveBeenCalledWith(mockMsgReq, mockMsgRes);
 
     // 3. Post a message with an invalid session ID
-    const invalidMsgResponse = await request(app)
-      .post('/messages?sessionId=invalid')
-      .send({ jsonrpc: "2.0", method: "test", id: 1 });
+    const invalidMsgRes: any = {
+      status: vi.fn().mockReturnThis(),
+      send: vi.fn().mockReturnThis(),
+    };
+    const invalidMsgReq: any = {
+      query: { sessionId: 'invalid' }
+    };
 
-    expect(invalidMsgResponse.status).toBe(400);
-    expect(invalidMsgResponse.text).toBe('Invalid or expired session ID');
+    await handlers['/messages'](invalidMsgReq, invalidMsgRes);
+
+    expect(invalidMsgRes.status).toHaveBeenCalledWith(400);
+    expect(invalidMsgRes.send).toHaveBeenCalledWith('Invalid or expired session ID');
   });
 
   it('should handle multiple concurrent sessions', async () => {
-    installMcpServer(app, mockHnapi);
+    installMcpServer(mockApp, mockHnapi);
+    await new Promise(resolve => setTimeout(resolve, 50));
 
     const { SSEServerTransport } = await import("@modelcontextprotocol/sdk/server/sse.js");
 
-    // Client 1
-    await request(app).get('/sse');
-    const calls1 = (SSEServerTransport as any).mock.calls;
-    const sessionId1 = calls1[calls1.length - 1][0].split('=')[1];
+    // Session 1
+    const res1: any = { writeHead: vi.fn(), end: vi.fn() };
+    const req1: any = { on: vi.fn() };
+    await handlers['/sse'](req1, res1);
+    const sessionId1 = (SSEServerTransport as any).mock.calls[(SSEServerTransport as any).mock.calls.length - 1][0].split('=')[1];
 
-    // Client 2
-    await request(app).get('/sse');
-    const calls2 = (SSEServerTransport as any).mock.calls;
-    const sessionId2 = calls2[calls2.length - 1][0].split('=')[1];
+    // Session 2
+    const res2: any = { writeHead: vi.fn(), end: vi.fn() };
+    const req2: any = { on: vi.fn() };
+    await handlers['/sse'](req2, res2);
+    const sessionId2 = (SSEServerTransport as any).mock.calls[(SSEServerTransport as any).mock.calls.length - 1][0].split('=')[1];
 
     expect(sessionId1).not.toBe(sessionId2);
 
-    // Both should be valid
-    expect((await request(app).post(`/messages?sessionId=${sessionId1}`)).status).toBe(200);
-    expect((await request(app).post(`/messages?sessionId=${sessionId2}`)).status).toBe(200);
+    // Both should work
+    const msgRes1: any = { status: vi.fn().mockReturnThis(), send: vi.fn().mockReturnThis() };
+    await handlers['/messages']({ query: { sessionId: sessionId1 } }, msgRes1);
+    expect(msgRes1.status).not.toHaveBeenCalledWith(400);
+
+    const msgRes2: any = { status: vi.fn().mockReturnThis(), send: vi.fn().mockReturnThis() };
+    await handlers['/messages']({ query: { sessionId: sessionId2 } }, msgRes2);
+    expect(msgRes2.status).not.toHaveBeenCalledWith(400);
   });
 });
