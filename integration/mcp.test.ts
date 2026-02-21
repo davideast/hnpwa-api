@@ -5,20 +5,22 @@ import { installMcpServer } from '../src/mcp/server';
 
 // Mock the MCP SDK since it might not be installed in the environment
 vi.mock("@modelcontextprotocol/sdk/server/mcp.js", () => {
-  return {
-    McpServer: vi.fn().mockImplementation(() => ({
+  const McpServer = vi.fn().mockImplementation(function() {
+    return {
       resource: vi.fn(),
       connect: vi.fn().mockResolvedValue(undefined),
-    })),
-  };
+    };
+  });
+  return { McpServer };
 });
 
 vi.mock("@modelcontextprotocol/sdk/server/sse.js", () => {
-  return {
-    SSEServerTransport: vi.fn().mockImplementation((endpoint, res) => ({
+  const SSEServerTransport = vi.fn().mockImplementation(function() {
+    return {
       handlePostMessage: vi.fn().mockResolvedValue(undefined),
-    })),
-  };
+    };
+  });
+  return { SSEServerTransport };
 });
 
 describe('MCP Integration', () => {
@@ -43,9 +45,10 @@ describe('MCP Integration', () => {
     // In our implementation, we don't return it in the body but it's in the SSEServerTransport constructor
     // Since we are mocking, we can't easily see the sessionId unless we spy on the constructor
     const { SSEServerTransport } = await import("@modelcontextprotocol/sdk/server/sse.js");
-    const lastCall = (SSEServerTransport as any).mock.calls[(SSEServerTransport as any).mock.calls.length - 1];
-    const endpoint = lastCall[0];
-    const sessionId = endpoint.split('=')[1];
+    const calls = (SSEServerTransport as any).mock.calls;
+    const lastCall = calls[calls.length - 1];
+    const endpoint = lastCall ? lastCall[0] : '';
+    const sessionId = endpoint.includes('=') ? endpoint.split('=')[1] : undefined;
     expect(sessionId).toBeDefined();
 
     // 2. Post a message using that session ID
@@ -67,14 +70,17 @@ describe('MCP Integration', () => {
   it('should handle multiple concurrent sessions', async () => {
     installMcpServer(app, mockHnapi);
 
+    const { SSEServerTransport } = await import("@modelcontextprotocol/sdk/server/sse.js");
+
     // Client 1
     await request(app).get('/sse');
-    const { SSEServerTransport } = await import("@modelcontextprotocol/sdk/server/sse.js");
-    const sessionId1 = (SSEServerTransport as any).mock.calls[(SSEServerTransport as any).mock.calls.length - 1][0].split('=')[1];
+    const calls1 = (SSEServerTransport as any).mock.calls;
+    const sessionId1 = calls1[calls1.length - 1][0].split('=')[1];
 
     // Client 2
     await request(app).get('/sse');
-    const sessionId2 = (SSEServerTransport as any).mock.calls[(SSEServerTransport as any).mock.calls.length - 1][0].split('=')[1];
+    const calls2 = (SSEServerTransport as any).mock.calls;
+    const sessionId2 = calls2[calls2.length - 1][0].split('=')[1];
 
     expect(sessionId1).not.toBe(sessionId2);
 
