@@ -16,6 +16,9 @@
         "src/test/serve.test.ts",
         "src/test/publish.test.ts",
         "src/test/offline.test.ts",
-        "src/cli.ts"
+        "src/cli.ts",
+        "src/mcp/server.ts",
+        "src/mcp/resources/index.ts",
+        "src/mcp/resources/user.ts"
     ]
 }

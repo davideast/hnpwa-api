@@ -40,7 +40,7 @@ export interface Api {
   show(options: ApiOptions): Promise<Story[]>;
   jobs(options: ApiOptions): Promise<Story[]>;
   item(id: number): Promise<Item | null>;
-  user(id: number): Promise<User | null>;
+  user(id: string | number): Promise<User | null>;
 }
 
 export type ApiCreator = (app: firebase.app.App) => Api;
@@ -114,7 +114,7 @@ const api: ApiCreator = (app: firebase.app.App) => {
     jobs(options: ApiOptions) {
       return storyFactory(apiMap.JOBS, app)(options);
     },
-    user(id: number) {
+    user(id: string | number) {
       return getUser(id, app);
     },
     async item(id: number) {
