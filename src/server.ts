@@ -94,14 +94,6 @@ export function getNewsAndStuff(hnapi: Api) {
  * the user.
  * @param firebaseApp
  */
-// TODO [MCP-TASK]: Create Item Resource
-// Type: Resource
-// Complexity: Low
-// Context: Expose individual items and comments.
-// Strategy:
-// 1. Create `src/mcp/resources/item.ts`.
-// 2. Register resource `hn://item/{id}`.
-// 3. Use `hnapi.item(id)` to fetch data.
 export function getItemAndComments(hnapi: Api) {
   return async (req: any, res: any) => {
     const itemId = req.params[0];
