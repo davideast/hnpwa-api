@@ -8,6 +8,20 @@ import { performance } from 'perf_hooks';
 class MockSnapshot {
   constructor(private _val: any) {}
   val() { return this._val; }
+  forEach(callback: (child: MockSnapshot) => void) {
+      if (Array.isArray(this._val)) {
+          this._val.forEach(item => callback(new MockSnapshot(item)));
+      } else if (this._val && typeof this._val === 'object') {
+          // If object, iterate over values? Or keys?
+          // Since we mocked array before, let's keep array mock but wrap it for forEach
+          // Wait, new code uses forEach on result of limitToFirst.
+          // If we return array, forEach should iterate it.
+          // But Firebase DataSnapshot.forEach iterates children.
+          // If val() is array [1,2,3], children are 1, 2, 3.
+          // callback(new MockSnapshot(1))
+          Object.values(this._val).forEach(val => callback(new MockSnapshot(val)));
+      }
+  }
 }
 
 class MockRef {
@@ -21,9 +35,17 @@ class MockRef {
     return this;
   }
 
+  orderByKey() {
+      return this;
+  }
+
+  startAt(k: string) {
+      return this;
+  }
+
   async once(event: string) {
     if (this.path.startsWith('v0/topstories')) {
-      // Return 50 IDs
+      // Return 50 IDs as array
       return new MockSnapshot(Array.from({length: 50}, (_, i) => i + 1));
     }
     if (this.path.includes('/item/')) {
