@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { registerNewsResource } from '../src/mcp/resources/news';
+import { newsResource } from '../src/mcp/resources/news.resource';
 
 describe('MCP News Resource', () => {
   it('should register a resource named news with correct URI pattern', async () => {
@@ -8,7 +8,7 @@ describe('MCP News Resource', () => {
     };
     const mockHnapi = {};
 
-    registerNewsResource(mockServer, mockHnapi as any);
+    newsResource.register(mockServer, mockHnapi as any);
 
     expect(mockServer.resource).toHaveBeenCalledWith(
       "news",
@@ -26,7 +26,7 @@ describe('MCP News Resource', () => {
       news: vi.fn().mockResolvedValue(mockStories)
     };
 
-    registerNewsResource(mockServer, mockHnapi as any);
+    newsResource.register(mockServer, mockHnapi as any);
 
     const handler = mockServer.resource.mock.calls[0][2];
 
@@ -52,7 +52,7 @@ describe('MCP News Resource', () => {
       news: vi.fn().mockResolvedValue(mockStories)
     };
 
-    registerNewsResource(mockServer, mockHnapi as any);
+    newsResource.register(mockServer, mockHnapi as any);
 
     const handler = mockServer.resource.mock.calls[0][2];
 
@@ -72,7 +72,7 @@ describe('MCP News Resource', () => {
       newest: vi.fn().mockResolvedValue(mockStories)
     };
 
-    registerNewsResource(mockServer, mockHnapi as any);
+    newsResource.register(mockServer, mockHnapi as any);
 
     const handler = mockServer.resource.mock.calls[0][2];
 
@@ -88,7 +88,7 @@ describe('MCP News Resource', () => {
     };
     const mockHnapi = {};
 
-    registerNewsResource(mockServer, mockHnapi as any);
+    newsResource.register(mockServer, mockHnapi as any);
 
     const handler = mockServer.resource.mock.calls[0][2];
 

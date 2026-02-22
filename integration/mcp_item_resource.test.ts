@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { registerItemResource } from '../src/mcp/resources/item';
+import { itemResource } from '../src/mcp/resources/item.resource';
 
 describe('MCP Item Resource', () => {
   it('should register a resource named item with correct URI pattern', async () => {
@@ -8,7 +8,7 @@ describe('MCP Item Resource', () => {
     };
     const mockHnapi = {};
 
-    registerItemResource(mockServer, mockHnapi as any);
+    itemResource.register(mockServer, mockHnapi as any);
 
     expect(mockServer.resource).toHaveBeenCalledWith(
       "item",
@@ -26,7 +26,7 @@ describe('MCP Item Resource', () => {
       item: vi.fn().mockResolvedValue(mockItem)
     };
 
-    registerItemResource(mockServer, mockHnapi as any);
+    itemResource.register(mockServer, mockHnapi as any);
 
     const handler = mockServer.resource.mock.calls[0][2];
 
@@ -51,7 +51,7 @@ describe('MCP Item Resource', () => {
       item: vi.fn().mockResolvedValue(null)
     };
 
-    registerItemResource(mockServer, mockHnapi as any);
+    itemResource.register(mockServer, mockHnapi as any);
 
     const handler = mockServer.resource.mock.calls[0][2];
 

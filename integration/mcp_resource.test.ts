@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { registerUserResource } from '../src/mcp/resources/user';
+import { userResource } from '../src/mcp/resources/user.resource';
 
 describe('MCP User Resource', () => {
   it('should register a resource named user with correct URI pattern', async () => {
@@ -10,7 +10,7 @@ describe('MCP User Resource', () => {
       user: vi.fn()
     };
 
-    registerUserResource(mockServer, mockHnapi);
+    userResource.register(mockServer, mockHnapi);
 
     expect(mockServer.resource).toHaveBeenCalledWith(
       "user",
@@ -28,7 +28,7 @@ describe('MCP User Resource', () => {
       user: vi.fn().mockResolvedValue(mockUser)
     };
 
-    registerUserResource(mockServer, mockHnapi);
+    userResource.register(mockServer, mockHnapi);
 
     // Get the handler function passed to mockServer.resource
     const handler = mockServer.resource.mock.calls[0][2];
@@ -54,7 +54,7 @@ describe('MCP User Resource', () => {
       user: vi.fn().mockResolvedValue(null)
     };
 
-    registerUserResource(mockServer, mockHnapi);
+    userResource.register(mockServer, mockHnapi);
 
     const handler = mockServer.resource.mock.calls[0][2];
 

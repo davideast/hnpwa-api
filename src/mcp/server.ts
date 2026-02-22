@@ -1,6 +1,7 @@
 import { Express } from 'express';
+import * as path from 'path';
 import { Api } from '../api';
-import { registerAllResources } from './resources';
+import { loadResources } from './resource-loader';
 
 /**
  * Install the MCP server into the Express app.
@@ -20,7 +21,10 @@ export function installMcpServer(app: Express, hnapi: Api) {
         version: "1.0.0"
       });
 
-      registerAllResources(server, hnapi);
+      const resources = await loadResources(path.join(__dirname, 'resources'));
+      for (const resource of resources) {
+        resource.register(server, hnapi);
+      }
 
       return { server, SSEServerTransport };
     } catch (e) {
