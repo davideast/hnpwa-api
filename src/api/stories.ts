@@ -12,11 +12,13 @@ export async function stories(topic: string, options: {}, firebaseApp: firebase.
   const opts = { page: 1, ...options };
   const limit = 30;
   const startIndex = (opts.page-1) * limit;
-  const endIndex = startIndex + limit;
   const ref = firebaseApp.database().ref('v0');
-  const storyRef = ref.child(topic).limitToFirst(limit * opts.page);
+  const storyRef = ref.child(topic).orderByKey().startAt(startIndex.toString()).limitToFirst(limit);
   const stories = await storyRef.once('value');
-  const items: number[] = stories.val().slice(startIndex, endIndex);
+  const items: number[] = [];
+  stories.forEach((child) => {
+    items.push(child.val());
+  });
   const resolves: Story[] = (await Promise.all(items.map(async id => {
     const snapshot = await ref.child('item').child(id.toString()).once('value');
     const item = snapshot.val() as HackerNewsItem;
