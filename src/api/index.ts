@@ -1,4 +1,5 @@
 export * from './interfaces';
+export * from './cache';
 import { Story, itemMap, Item, User } from './interfaces';
 import { stories } from './stories';
 import { getItemAndComments } from './item';

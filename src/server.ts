@@ -4,12 +4,15 @@ import 'firebase/compat/database';
 import express from 'express';
 import { Express }  from 'express';
 import compression from 'compression';
-import { Api } from './api';
+import { Api, SimpleLRU } from './api';
 import api from './api';
 import offlineApi from './offline/api';
 import { installMcpServer } from './mcp/server';
 
 export const FIREBASE_APP_NAME = 'hnpwa-api';
+
+const storiesCache = new SimpleLRU<any>(100, 1000 * 60 * 5); // 5 minutes
+const itemsCache = new SimpleLRU<any>(1000, 1000 * 60 * 10); // 10 minutes
 
 export interface ApiConfig {
   useCors?: boolean;
@@ -72,7 +75,15 @@ export function getNewsAndStuff(hnapi: Api) {
     // "news" | "ask" | "jobs" | "show" etc...
     const topic = req.params[0].replace('.json', '');
     const page = withinBounds(req.query.page);
+
+    const cacheKey = `${topic}-${page}`;
+    const cached = storiesCache.get(cacheKey);
+    if (cached) {
+      return res.jsonp(cached);
+    }
+
     const newsies = await hnapi[topic]({ page });
+    storiesCache.set(cacheKey, newsies);
     res.jsonp(newsies);
   };
 }
@@ -94,7 +105,14 @@ export function getNewsAndStuff(hnapi: Api) {
 export function getItemAndComments(hnapi: Api) {
   return async (req: any, res: any) => {
     const itemId = req.params[0];
+
+    const cached = itemsCache.get(itemId);
+    if (cached) {
+      return res.jsonp(cached);
+    }
+
     const item = await hnapi.item(itemId);
+    itemsCache.set(itemId, item);
     res.jsonp(item);
   };
 }
