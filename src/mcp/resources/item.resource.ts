@@ -1,4 +1,4 @@
-import { Api } from '../../api/index.ts';
+import { Api } from '../../api/index';
 import { McpResource } from '../resource';
 
 export const itemResource: McpResource = {
