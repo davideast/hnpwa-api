@@ -1,4 +1,5 @@
-import { HackerNewsItem, Story, story } from './interfaces';
+import { HackerNewsItem, Story } from './types';
+import { story } from './transforms';
 // @ts-ignore
 import firebase from 'firebase/compat/app';
 
