@@ -1,4 +1,4 @@
-import { HackerNewsItem, HackerNewsItemTree } from '../api';
+import { HackerNewsItem, HackerNewsItemTree } from './types';
 // @ts-ignore
 import firebase from 'firebase/compat/app';
 import LRUCache from 'lru-cache';

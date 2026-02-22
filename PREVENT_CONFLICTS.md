@@ -47,6 +47,7 @@ The goal of this analysis is to identify strategies to reduce merge conflicts an
 - **Goal:** `src/api/index.ts` should either be removed (preferred, forcing direct imports) or become a pure re-export file with no logic.
 
 ### 2. Separate Types from Logic (`src/api/interfaces.ts`)
+- **Status:** Completed (2026-02-22)
 - **Action:** Split `src/api/interfaces.ts` into two files:
   - `src/api/types.ts` (or keep `interfaces.ts` strictly for interfaces): Contains only `interface` and `type` definitions.
   - `src/api/transforms.ts`: Contains `story`, `cleanText`, `itemTransform`, and `recurseCommentTree` functions.
@@ -60,6 +61,7 @@ The goal of this analysis is to identify strategies to reduce merge conflicts an
 - **Goal:** `src/server.ts` should only be responsible for wiring up the server, middleware, and routes, not implementing the business logic for each route.
 
 ### 4. Resolve Circular Dependencies
+- **Status:** Completed (2026-02-22)
 - **Action:** Update imports in `src/api/item.ts` (and others) to import types directly from `src/api/interfaces.ts` (or the new `types.ts`) instead of importing from the barrel file `src/api/index.ts`.
 - **Goal:** Eliminate dependency cycles to improve code stability and analysis.
 
