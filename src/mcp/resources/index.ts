@@ -1,5 +1,6 @@
 import { Api } from '../../api';
 import { registerUserResource } from './user';
+import { registerNewsResource } from './news';
 
 /**
  * Register all MCP resources.
@@ -9,4 +10,5 @@ import { registerUserResource } from './user';
  */
 export function registerAllResources(server: any, hnapi: Api) {
   registerUserResource(server, hnapi);
+  registerNewsResource(server, hnapi);
 }
