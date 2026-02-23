@@ -1,4 +1,4 @@
-import { Api } from '../../api/index';
+import { Api } from '../../api/types';
 import { McpResource } from '../resource';
 
 export const itemResource: McpResource = {

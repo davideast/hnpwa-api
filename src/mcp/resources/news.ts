@@ -1,4 +1,4 @@
-import { Api } from '../../api/index';
+import { Api } from '../../api/types';
 import { McpResource } from '../resource';
 
 export const newsResource: McpResource = {
@@ -16,7 +16,7 @@ export const newsResource: McpResource = {
         const pageStr = uri.searchParams?.get("page") || "1";
         const page = parseInt(pageStr, 10);
 
-        const stories = await (hnapi as any)[topic]({ page });
+        const stories = await hnapi[topic]({ page });
 
         return {
           contents: [{

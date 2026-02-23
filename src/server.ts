@@ -62,14 +62,6 @@ export function getIndex(hnapi: Api) {
  * through the ?page query param.
  * @param firebaseApp
  */
-// TODO [MCP-TASK]: Create News Resources
-// Type: Resource
-// Complexity: Low
-// Context: Expose stories (news, ask, jobs, etc.) to LLMs.
-// Strategy:
-// 1. Create `src/mcp/resources/news.ts`.
-// 2. Register resources `hn://{topic}` where topic is 'news', 'newest', 'ask', 'show', 'jobs'.
-// 3. Use `hnapi[topic]({ page })` to fetch data.
 export function getNewsAndStuff(hnapi: Api) {
   return async (req: any, res: any) => {
     // "news" | "ask" | "jobs" | "show" etc...
