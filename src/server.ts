@@ -11,8 +11,16 @@ import { installMcpServer } from './mcp/server';
 
 export const FIREBASE_APP_NAME = 'hnpwa-api';
 
-const storiesCache = new SimpleLRU<any>(100, 1000 * 60 * 5); // 5 minutes
-const itemsCache = new SimpleLRU<any>(1000, 1000 * 60 * 10); // 10 minutes
+const MS_PER_MINUTE = 60 * 1000;
+
+export const STORIES_CACHE_MAX_SIZE = 100;
+export const STORIES_CACHE_TTL = 5 * MS_PER_MINUTE;
+
+export const ITEMS_CACHE_MAX_SIZE = 1000;
+export const ITEMS_CACHE_TTL = 10 * MS_PER_MINUTE;
+
+const storiesCache = new SimpleLRU<any>(STORIES_CACHE_MAX_SIZE, STORIES_CACHE_TTL);
+const itemsCache = new SimpleLRU<any>(ITEMS_CACHE_MAX_SIZE, ITEMS_CACHE_TTL);
 
 export interface ApiConfig {
   useCors?: boolean;
