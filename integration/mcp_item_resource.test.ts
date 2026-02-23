@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { itemResource } from '../src/mcp/resources/item.resource';
+import { itemResource } from '../src/mcp/resources/item';
 
 describe('MCP Item Resource', () => {
   it('should register a resource named item with correct URI pattern', async () => {
