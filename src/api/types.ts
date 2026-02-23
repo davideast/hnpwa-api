@@ -1,3 +1,6 @@
+// @ts-ignore
+import firebase from 'firebase/compat/app';
+
 export interface HackerNewsItem {
   /** The item's unique id */
   id: number;
@@ -87,3 +90,24 @@ export interface HackerNewsItemTree {
    item: HackerNewsItem;
    comments: (HackerNewsItemTree | null)[];
 }
+
+export type ApiFn = (options: {}) => Promise<Story[]>;
+export type ApiString = 'topstories' | 'newstories' | 'askstories' | 'showstories' | 'jobstories' | 'item' | 'user';
+
+export interface ApiOptions {
+  page: number;
+}
+
+export interface Api {
+  [key: string]: any;
+  index(): { name: string };
+  news(options: ApiOptions): Promise<Story[]>;
+  newest(options: ApiOptions): Promise<Story[]>;
+  ask(options: ApiOptions): Promise<Story[]>;
+  show(options: ApiOptions): Promise<Story[]>;
+  jobs(options: ApiOptions): Promise<Story[]>;
+  item(id: number): Promise<Item | null>;
+  user(id: string | number): Promise<User | null>;
+}
+
+export type ApiCreator = (app: firebase.app.App) => Api;
