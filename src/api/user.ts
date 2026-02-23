@@ -1,7 +1,7 @@
 // @ts-ignore
 import firebase from 'firebase/compat/app';
 import moment from 'moment';
-import { User } from './';
+import { User } from './types';
 
 /**
  * Get a user by their id and transform into a UI friendly JSON object.

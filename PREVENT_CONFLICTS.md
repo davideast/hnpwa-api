@@ -40,6 +40,7 @@ The goal of this analysis is to identify strategies to reduce merge conflicts an
 ## Action Items
 
 ### 1. Dismantle the Barrel File (`src/api/index.ts`)
+- **Status:** Completed (2026-02-22)
 - **Action:** Move the logic out of `src/api/index.ts`.
   - Extract factory functions to `src/api/factories.ts`.
   - Extract the `Api` and `ApiOptions` types to `src/api/types.ts`.
