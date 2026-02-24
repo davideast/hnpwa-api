@@ -16,18 +16,29 @@ export interface GetStoriesOptions {
 export async function getStories(
   { hnapi, topic, opts, max, acc = [] }: GetStoriesOptions,
   onStories?: (stories: Story[], sum: Story[], page: number) => void): Promise<Story[]> {
-  const news = await hnapi[topic](opts);
-  const sum = acc.concat(news);
-  const nextPage = opts.page + 1;
-  if(onStories !== undefined) {
-    onStories(news, sum, opts.page);
-  }
-  if(opts.page >= max) {
-    return sum;
-  }
-  opts = { page: nextPage };
 
-  return getStories({ hnapi, topic, opts, max, acc: sum }, onStories);
+  const pages: number[] = [];
+  for (let i = opts.page; i <= max; i++) {
+    pages.push(i);
+  }
+
+  const results = await Promise.all(pages.map(async (page) => {
+    const stories = await hnapi[topic]({ ...opts, page });
+    return { stories, page };
+  }));
+
+  // Sort by page number to ensure consistent accumulation and callback order
+  results.sort((a, b) => a.page - b.page);
+
+  let sum = [...acc];
+  for (const result of results) {
+    sum = sum.concat(result.stories);
+    if (onStories !== undefined) {
+      onStories(result.stories, sum, result.page);
+    }
+  }
+
+  return sum;
 }
 
 /**
