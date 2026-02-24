@@ -1,6 +1,22 @@
-import { describe, it, expect, beforeAll } from 'vitest';
+import { describe, it, expect, beforeAll, vi } from 'vitest';
 import request from 'supertest';
 import { createExpressApp } from '../src/server';
+
+// Mock offline API to avoid missing file errors
+vi.mock('../src/offline/api', () => {
+  return {
+    default: vi.fn().mockReturnValue({
+      index: () => ({ name: 'Welcome to the HNPWA API' }),
+      news: async () => ([{ id: 1, title: 'Test' }]),
+      newest: async () => ([]),
+      ask: async () => ([]),
+      show: async () => ([]),
+      jobs: async () => ([]),
+      user: async () => ({ id: 'test' }),
+      item: async () => ({ id: 1 })
+    })
+  };
+});
 
 describe('Security Fix: Race Condition in Global Configuration', () => {
   let app: any;

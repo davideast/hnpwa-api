@@ -169,15 +169,13 @@ function cacheControl(config: ApiConfig) {
 
 function prettyPrint() {
   return (req: any, res: any, next: Function) => {
-    const { print } = req.query;
-    const spaces = typeof print === 'undefined' ? 0 : 2;
-
     // Override res.json and res.jsonp to avoid global state modifications.
     // This prevents race conditions where concurrent requests interfere with
     // each other's response formatting.
     const app = req.app;
 
     res.json = function(obj: any) {
+      const spaces = typeof req.query.print === 'undefined' ? 0 : 2;
       const replacer = app.get('json replacer');
       const body = JSON.stringify(obj, replacer, spaces);
       this.set('Content-Type', 'application/json');
@@ -185,8 +183,9 @@ function prettyPrint() {
     };
 
     res.jsonp = function(obj: any) {
+      const spaces = typeof req.query.print === 'undefined' ? 0 : 2;
       const replacer = app.get('json replacer');
-      const body = JSON.stringify(obj, replacer, spaces);
+      let body = JSON.stringify(obj, replacer, spaces);
       const callbackName = app.get('jsonp callback name') || 'callback';
       let callback = req.query[callbackName];
 
@@ -198,6 +197,12 @@ function prettyPrint() {
         this.set('X-Content-Type-Options', 'nosniff');
         this.set('Content-Type', 'text/javascript');
         const cb = callback.replace(/[^\[\]\w$.]/g, '');
+
+        // Handle undefined JSON.stringify result
+        if (typeof body === 'undefined') {
+          return this.send(`/**/ typeof ${cb} === 'function' && ${cb}(${body});`);
+        }
+
         const json = body.replace(/\u2028/g, '\\u2028').replace(/\u2029/g, '\\u2029');
         return this.send(`/**/ typeof ${cb} === 'function' && ${cb}(${json});`);
       }
