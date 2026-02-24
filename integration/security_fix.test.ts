@@ -47,7 +47,7 @@ describe('Security Fix: Race Condition in Global Configuration', () => {
   it('should return pretty-printed JSON for the index page', async () => {
     const response = await request(app).get('/');
     expect(response.status).toBe(200);
-    // Index page is forced to be pretty by prettyIndex middleware
+    // Index page is forced to be pretty by default in prettyPrint middleware
     expect(response.text).toContain('\n');
     expect(response.text).toContain('  "');
   });

@@ -175,7 +175,11 @@ function prettyPrint() {
     const app = req.app;
 
     res.json = function(obj: any) {
-      const spaces = typeof req.query.print === 'undefined' ? 0 : 2;
+      const print = this.req.query.print;
+      // Index page (/) is pretty-printed by default
+      const isIndex = this.req.path === '/' || this.req.path === '';
+      const spaces = (typeof print === 'undefined' && !isIndex) ? 0 : 2;
+
       const replacer = app.get('json replacer');
       const body = JSON.stringify(obj, replacer, spaces);
       this.set('Content-Type', 'application/json');
@@ -183,11 +187,15 @@ function prettyPrint() {
     };
 
     res.jsonp = function(obj: any) {
-      const spaces = typeof req.query.print === 'undefined' ? 0 : 2;
+      const print = this.req.query.print;
+      // Index page (/) is pretty-printed by default
+      const isIndex = this.req.path === '/' || this.req.path === '';
+      const spaces = (typeof print === 'undefined' && !isIndex) ? 0 : 2;
+
       const replacer = app.get('json replacer');
       let body = JSON.stringify(obj, replacer, spaces);
       const callbackName = app.get('jsonp callback name') || 'callback';
-      let callback = req.query[callbackName];
+      let callback = this.req.query[callbackName];
 
       if (Array.isArray(callback)) {
         callback = callback[0];
@@ -213,15 +221,6 @@ function prettyPrint() {
 
     next();
   };
-}
-
-function prettyIndex() {
-  return (req: any, res: any, next: Function) => {
-    if (req.path === '/') {
-      req.query.print = 'pretty'
-    }
-    next();
-  }
 }
 
 // Define RequestHandler type locally to match express usage
@@ -266,7 +265,6 @@ export function createExpressApp(config: ApiConfig) {
   // Configure middleware
   if (config.useCompression) { expressApp.use(compression()); }
   expressApp.use(cacheControl(config));
-  expressApp.use(prettyIndex());
   expressApp.use(prettyPrint());
 
   if (config.offline) { expressApp.use(express.static(`${__dirname}/offline/static`)); }
