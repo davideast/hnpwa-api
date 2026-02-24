@@ -169,24 +169,58 @@ function cacheControl(config: ApiConfig) {
 
 function prettyPrint() {
   return (req: any, res: any, next: Function) => {
-    const { print } = req.query;
-    if (typeof print === 'undefined') {
-      req.app.set('json spaces', 0);
-      next();
-      return;
-    }
-    req.app.set('json spaces', 2);
+    // Override res.json and res.jsonp to avoid global state modifications.
+    // This prevents race conditions where concurrent requests interfere with
+    // each other's response formatting.
+    const app = req.app;
+
+    res.json = function(obj: any) {
+      const print = this.req.query.print;
+      // Index page (/) is pretty-printed by default
+      const isIndex = this.req.path === '/' || this.req.path === '';
+      const spaces = (typeof print === 'undefined' && !isIndex) ? 0 : 2;
+
+      const replacer = app.get('json replacer');
+      const body = JSON.stringify(obj, replacer, spaces);
+      this.set('Content-Type', 'application/json');
+      return this.send(body);
+    };
+
+    res.jsonp = function(obj: any) {
+      const print = this.req.query.print;
+      // Index page (/) is pretty-printed by default
+      const isIndex = this.req.path === '/' || this.req.path === '';
+      const spaces = (typeof print === 'undefined' && !isIndex) ? 0 : 2;
+
+      const replacer = app.get('json replacer');
+      let body = JSON.stringify(obj, replacer, spaces);
+      const callbackName = app.get('jsonp callback name') || 'callback';
+      let callback = this.req.query[callbackName];
+
+      if (Array.isArray(callback)) {
+        callback = callback[0];
+      }
+
+      if (typeof callback === 'string' && callback.length !== 0) {
+        this.set('X-Content-Type-Options', 'nosniff');
+        this.set('Content-Type', 'text/javascript');
+        const cb = callback.replace(/[^\[\]\w$.]/g, '');
+
+        // Handle undefined JSON.stringify result
+        if (typeof body === 'undefined') {
+          return this.send(`/**/ typeof ${cb} === 'function' && ${cb}(${body});`);
+        }
+
+        const json = body.replace(/\u2028/g, '\\u2028').replace(/\u2029/g, '\\u2029');
+        return this.send(`/**/ typeof ${cb} === 'function' && ${cb}(${json});`);
+      }
+
+      this.set('Content-Type', 'application/json');
+      return this.send(body);
+    };
+
     next();
   };
-}
-
-function prettyIndex() {
-  return (req: any, res: any, next: Function) => {
-    if (req.path === '/') {
-      req.query.print = 'pretty'
-    }
-    next();
-  }
 }
 
 // Define RequestHandler type locally to match express usage
@@ -226,11 +260,11 @@ export function configureExpressRoutes(expressApp: Express, config: ApiConfig) {
  */
 export function createExpressApp(config: ApiConfig) {
   let expressApp: Express = express();
+  expressApp.set('json spaces', 0);
 
   // Configure middleware
   if (config.useCompression) { expressApp.use(compression()); }
   expressApp.use(cacheControl(config));
-  expressApp.use(prettyIndex());
   expressApp.use(prettyPrint());
 
   if (config.offline) { expressApp.use(express.static(`${__dirname}/offline/static`)); }
