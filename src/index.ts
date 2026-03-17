@@ -22,6 +22,7 @@ export const trigger = (config?: ApiConfig): Trigger => {
    // merge defaults with config
    const mergedConfig : ApiConfig = {
       useCors: false,
+      corsOrigin: true,
       routerPath: '',
       cdnCacheExpiry: 600,
       browserCacheExpiry: 300,
@@ -51,7 +52,7 @@ export const trigger = (config?: ApiConfig): Trigger => {
 
    // wrap in cors if cors enabled
    if (mergedConfig.useCors) {
-      const corsServer = cors({ origin: true });
+      const corsServer = cors({ origin: mergedConfig.corsOrigin as any });
       // Marked as any because of Type mismatch between CORS package and
       // Functions
       return functions

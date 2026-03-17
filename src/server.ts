@@ -24,6 +24,7 @@ const itemsCache = new SimpleLRU<any>(ITEMS_CACHE_MAX_SIZE, ITEMS_CACHE_TTL);
 
 export interface ApiConfig {
   useCors?: boolean;
+  corsOrigin?: boolean | string | RegExp | Array<string | RegExp>;
   routerPath?: string;
   useCompression?: boolean;
   browserCacheExpiry?: number;
