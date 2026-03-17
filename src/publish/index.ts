@@ -45,33 +45,41 @@ export function publisher(opts: PublishOptions, afterWrite: () => void) {
  * @param root 
  * @param cwd 
  */
-export function createFolderStructure(root: string, cwd: string, log: Function) {
+export async function createFolderStructure(root: string, cwd: string, log: Function) {
   const rootPath = path.resolve(cwd, root);
   const itemPath = path.resolve(rootPath, 'item');
   // Delete existing files first for a fresh deploy
   log('Deleting current data.');
-  fs.removeSync(rootPath);
-  fs.mkdirpSync(rootPath);
-  Object.keys(MAX_PAGES).forEach(topic => {
+  await fs.remove(rootPath);
+  await fs.mkdirp(rootPath);
+
+  const topicPromises = Object.keys(MAX_PAGES).map(async topic => {
     // Dont need to create a root folder
     if(topic === '/') { return; }
     const maxPlusOne = MAX_PAGES[topic] + 1;
     const tenPagesLater = maxPlusOne + 10;
     let count = maxPlusOne;
     const topicPath = path.resolve(rootPath, topic);
-    fs.mkdirpSync(topicPath);
+    await fs.mkdirp(topicPath);
     // Write a 404 json result for the next page outside of the
     // MAX_PAGES result. Currently use 10 pages of blank arrays
     // to be on the safe side. Outside of that extra 10 pages
     // a 404 should be dynamically generated.
+    const write404Promises = [];
     while(count < tenPagesLater) {
       const path404 = path.resolve(topicPath, `${count}.json`);
-      fs.writeFileSync(path404, JSON.stringify([]), 'utf8');
-      log(`Wrote ${path404}.`);
+      write404Promises.push(
+        fs.writeFile(path404, JSON.stringify([]), 'utf8').then(() => {
+          log(`Wrote ${path404}.`);
+        })
+      );
       count++;
     }
+    await Promise.all(write404Promises);
   });
-  fs.mkdirpSync(itemPath);
+
+  await Promise.all(topicPromises);
+  await fs.mkdirp(itemPath);
   return rootPath;
 }
 
@@ -81,9 +89,9 @@ export function createFolderStructure(root: string, cwd: string, log: Function) 
  * @param rootPath 
  * @param afterWrite 
  */
-function createPublishTask(dest: string, cwd: string, afterWrite: Function, log: Function): () => void {
+function createPublishTask(dest: string, cwd: string, afterWrite: Function, log: Function): () => Promise<void> {
   return async () => {
-    const rootPath = createFolderStructure(dest, cwd, log);
+    const rootPath = await createFolderStructure(dest, cwd, log);
     const firebaseApp = initializeApp({ firebaseAppName: `${Date.now()}` });
     const hnapi = api(firebaseApp);
     const promiseHash = writeTopics(hnapi, rootPath, log);
@@ -98,7 +106,7 @@ function createPublishTask(dest: string, cwd: string, afterWrite: Function, log:
  * @param hnapi 
  * @param rootPath 
  */
-function writeTopics(hnapi: Api, rootPath: string, log: Function) {
+export function writeTopics(hnapi: Api, rootPath: string, log: Function) {
   let promiseHash: { [key: string]: Promise<Story[]> } = {};
   Object.keys(MAX_PAGES).forEach(topic => {
     if (typeof hnapi[topic] !== 'function') {
@@ -107,10 +115,10 @@ function writeTopics(hnapi: Api, rootPath: string, log: Function) {
     else {
       const opts = { page: 1 };
       const max = MAX_PAGES[topic];
-      promiseHash[topic] = getStories({ hnapi, topic, opts, max }, function getStories(stories, sum, page) {
+      promiseHash[topic] = getStories({ hnapi, topic, opts, max }, async function getStories(stories, sum, page) {
         const topicPath = path.resolve(rootPath, topic, `${page.toString()}.json`);
         if (stories.length > 0) {
-          fs.writeFileSync(topicPath, JSON.stringify(stories), 'utf8');
+          await fs.writeFile(topicPath, JSON.stringify(stories), 'utf8');
           log(`Wrote ${topicPath}.`);
         }
       });
@@ -125,21 +133,21 @@ function writeTopics(hnapi: Api, rootPath: string, log: Function) {
  * @param hnapi 
  * @param rootPath 
  */
-async function writeItems(stories: Story[], hnapi: Api, rootPath: string, log: Function) {
+export async function writeItems(stories: Story[], hnapi: Api, rootPath: string, log: Function) {
   try {
     const itemPromises = stories.map(story => hnapi.item(story.id));
     const allItems = await Promise.all(itemPromises);
-    return new Promise((resolve, reject) => {
-      allItems.forEach(item => {
-        if(item === null) {
-          return;
-        }
-        const itemPath = path.resolve(rootPath, 'item', `${item.id.toString()}.json`);
-        fs.writeFileSync(itemPath, JSON.stringify(item), 'utf8');
-        log(`Wrote ${itemPath}.`)
-      });
-      resolve(void 0);
+
+    const writePromises = allItems.map(async item => {
+      if (item === null) {
+        return;
+      }
+      const itemPath = path.resolve(rootPath, 'item', `${item.id.toString()}.json`);
+      await fs.writeFile(itemPath, JSON.stringify(item), 'utf8');
+      log(`Wrote ${itemPath}.`);
     });
+
+    await Promise.all(writePromises);
   } catch(e) {
     log(e);
     throw e;

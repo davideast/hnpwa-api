@@ -15,7 +15,7 @@ export interface GetStoriesOptions {
  */
 export async function getStories(
   { hnapi, topic, opts, max, acc = [] }: GetStoriesOptions,
-  onStories?: (stories: Story[], sum: Story[], page: number) => void): Promise<Story[]> {
+  onStories?: (stories: Story[], sum: Story[], page: number) => void | Promise<void>): Promise<Story[]> {
 
   const pages: number[] = [];
   for (let i = opts.page; i <= max; i++) {
@@ -34,7 +34,7 @@ export async function getStories(
   for (const result of results) {
     sum = sum.concat(result.stories);
     if (onStories !== undefined) {
-      onStories(result.stories, sum, result.page);
+      await onStories(result.stories, sum, result.page);
     }
   }
 
