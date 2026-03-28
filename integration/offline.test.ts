@@ -33,9 +33,7 @@ describe('Integration: Offline & Publisher', () => {
   });
 
   it('should build offline files correctly (limited scope)', async () => {
-    const app = initializeApp({ firebaseAppName: `test-offline-${Date.now()}` });
-    const hnapi = api(app);
-
+    initializeApp({ firebaseAppName: `test-offline-${Date.now()}` });
     // We use a spy or just verify file existence
     // We rely on MAX_PAGES=1 modification to keep it fast
 
@@ -52,8 +50,7 @@ describe('Integration: Offline & Publisher', () => {
   });
 
   it('should publish files to specified destination', async () => {
-    const app = initializeApp({ firebaseAppName: `test-publish-${Date.now()}` });
-
+    initializeApp({ firebaseAppName: `test-publish-${Date.now()}` });
     // Publisher uses CronJob but we can check the task logic or just run the task?
     // publisher returns { _job, start, stop, isRunning }
     // The task logic is private in `createPublishTask`.
